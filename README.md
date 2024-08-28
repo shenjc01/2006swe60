@@ -5,5 +5,5 @@ SC2006 Software Engineering Group 60
 - Park Yumin
 - Tay Jih How
 - Saravanan Deepika
-- See Tow Tze Jiet
+- See Tow Tze Jiet 
 - Shen Jia Cheng
