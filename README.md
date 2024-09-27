@@ -20,7 +20,7 @@ After downloading and installing WampServer, run it wait till you see the green 
 Navigate to the directory of the wampserver which will be under
 >C:\wamp64\www
 
-This folder will be the place where the localhost will load the website.
+This folder will be the place where the localhost will load the website. <br />
 Open the browser of your choice and enter localhost in the url tab which you will see this page
 ![image](https://github.com/user-attachments/assets/a42ead09-89d4-428e-91d2-c5bae5d43e66)
 if you see this page it means you are good to go
@@ -37,11 +37,11 @@ Lastly we have to set up the database to store the user so we will go to PhpMyAd
 >localhost/phpmyadmin
 
 ![image](https://github.com/user-attachments/assets/ccfc1011-68f7-42c6-9899-54dfd0d9fe75)
-after you see this for now the account by default are
-username: root
-password: (blank)
-Server Choice: MySQL
-Click Login after that and you will come to this page.
+after you see this for now the account by default are <br />
+username: root <br />
+password: (blank) <br />
+Server Choice: MySQL <br />
+Click Login after that and you will come to this page. <br />
 Next you have to import the .sql file inside the folder that you downloaded
 ![image](https://github.com/user-attachments/assets/fde0053f-264c-42ea-b694-ad81e1db9d40)
 Choose the recyclo.sql file and scroll down to import the database
