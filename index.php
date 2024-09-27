@@ -1,3 +1,13 @@
+<?php
+session_start();
+if (!empty($_COOKIE["username"])) {
+	$cookie_username = $_COOKIE['username'];
+	$cookie_password = $_COOKIE['password'];
+}
+if (isset($_SESSION['username'])) {
+	$current_session_user = $_SESSION['username'];
+}
+?>
 <!DOCTYPE html>
 <html lang = "en">
 
@@ -63,6 +73,13 @@
                         <a class="dropdown-item" target="_blank" rel="noopener" href="https://www.linkedin.com/in/jiacheng01/">LinkedIn</a>
                       </div>
                     </li>
+
+					<?php 
+					if (isset($current_session_user)) {
+						echo '<li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>';
+					} else {
+						echo '<li class="nav-item"><a class="nav-link" href="login.php">Login/Sign Up</a></li>';
+					}?>
                   </ul>
                 </div>
               </nav>
@@ -79,7 +96,12 @@
                 <div class="container flex-wrap justify-content-between">
                     <div class="row">
                         <div class="col-lg-6 col-md-12 site-title">
-                            <h1 class="title-text text-uppercase">Jia Cheng</h1>
+                            <h1 class="title-text text-uppercase"><?php 
+							if(isset($_SESSION['username'])) {
+								echo "Hi, $current_session_user";
+							} else {
+								echo "Hi, Guest";
+							}?></h1>
                             <h4 class="title-text text-uppercase">Designer | Developer</h4>
                             <p class="para-text">A young driven individual with a passion for design and web development. Feel free to hit me up for a cup of coffee!</p>
                             <div class="site-buttons">
