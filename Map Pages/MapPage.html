@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+<!-- Input Field -->
+<input type="text" id="userInput" placeholder="Input Your Address or Postal Code">
+
+<!-- Button to trigger action -->
+<button onclick="submitLocation()">Submit</button>
+
+<!-- Area to display the input -->
+<p id="debug"></p>
+<p id="latlong"></p>
+<p id="address"></p>
+
+<!-- JavaScript code to handle the input -->
+<script>
+    let start = new Map();
+    let pointlist = [];
+    let colourlist = [];
+    const addressResolverUri = str =>
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N`;
+    function displayPinsUri(width, height, scale, centre, pointlist, colourlist){
+        let uri =
+            `https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default` +
+            `&zoom=${scale}&height=${height}&width=${width}` +
+            `&lat=${centre.get('lat')}&lng=${centre.get('long')}&points=`;
+        let i = 0; while (true)
+        {
+            uri +=
+                `%5B${pointlist[i].get("lat")}%2C${pointlist[i].get("long")}%2C` +
+                `%22${colourlist[i][0]}%2C${colourlist[i][1]}%2C${colourlist[i][0]}%22%5D`;
+            if (++i<pointlist.length) uri += "%7C"; // this is the delimiter, |
+            else break;
+        }
+        return uri;
+    }
+    function submitLocation() {
+        // Get the value from the input field
+        const input = document.getElementById('userInput').value;
+        // Create new request object for address resolving
+        const addressResolveXHR = new XMLHttpRequest();
+        // Add the url to request
+        addressResolveXHR.open("GET",addressResolverUri(input));
+        // Set behavior once request is completed (display the results)
+        addressResolveXHR.onreadystatechange = () => {
+            const results = JSON.parse(addressResolveXHR.responseText)["results"][0];
+            start.set('lat', results["LATITUDE"]);
+            start.set('long', results["LONGITUDE"]);
+            document.getElementById('latlong').innerText = `lat: ${start.get("lat")} long: ${start.get("long")}`;
+            document.getElementById('address').innerText = results["SEARCHVAL"];
+
+
+
+            // Debug purposes
+            document.getElementById('debug').innerText = displayPinsUri(500,500,17,start,[start],[[0,0,255]]);
+        }
+        // Actually make it send the request
+        addressResolveXHR.send();
+
+    }
+</script>
+
+</body>
+</html>

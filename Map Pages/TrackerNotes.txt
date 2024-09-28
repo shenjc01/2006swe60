@@ -1,0 +1,7 @@
+Recently Achieved:
+[Map Page]
+Map page has a input field where you can type in a valid address and it spits out the lat and long
+
+TODO:
+- Create function to build uri for the OneMap API (map generation) <- Jih How currently here
+- Figure out if we want to store locations backend or frontend
