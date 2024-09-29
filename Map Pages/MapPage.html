@@ -16,12 +16,10 @@
 <p id="debug"></p>
 <p id="latlong"></p>
 <p id="address"></p>
-
+<img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=11&height=450&width=450&lat=1.366667&lng=103.8" alt="map of singapore">
 <!-- JavaScript code to handle the input -->
 <script>
     let start = new Map();
-    let pointlist = [];
-    let colourlist = [];
     const addressResolverUri = str =>
         `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N`;
     function displayPinsUri(width, height, scale, centre, pointlist, colourlist){
@@ -29,15 +27,46 @@
             `https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default` +
             `&zoom=${scale}&height=${height}&width=${width}` +
             `&lat=${centre.get('lat')}&lng=${centre.get('long')}&points=`;
-        let i = 0; while (true)
+
+        let i = 0; while (pointlist.length>0)
         {
             uri +=
                 `%5B${pointlist[i].get("lat")}%2C${pointlist[i].get("long")}%2C` +
-                `%22${colourlist[i][0]}%2C${colourlist[i][1]}%2C${colourlist[i][0]}%22%5D`;
+                `%22${colourlist[i][0]}%2C${colourlist[i][1]}%2C${colourlist[i][2]}%22%5D`;
+
             if (++i<pointlist.length) uri += "%7C"; // this is the delimiter, |
             else break;
+
+
         }
+        document.getElementById("debug").innerText = uri;
         return uri;
+    }
+    function regenerateMap(pointlist, mode=0){
+        switch(mode){
+            case 0:
+                let left = parseFloat(start.get("long"));
+                let right = parseFloat(start.get("long"));
+                let top = parseFloat(start.get("lat"));
+                let bottom = parseFloat(start.get("lat"));
+                const colourlist = [[0, 0, 0]];
+                for(let i=0; i<pointlist.length; i++){
+                    let y = parseFloat(pointlist[i].get("lat"));
+                    let x = parseFloat(pointlist[i].get("long"));
+                    if(y>top) top = y;
+                    if(y<bottom) bottom = y;
+                    if(x>right) right = x;
+                    if(x<left) left = x;
+                    colourlist.push([0,0,100]);
+                }
+                document.getElementById('debug').innerText = ([start].concat(pointlist))[0].get("lat");
+                document.getElementById('map').src = displayPinsUri(
+                    500, 500, 17,
+                    new Map([["lat",(top+bottom)/2],["long",(left+ right)/2]]),
+                    [start].concat(pointlist),
+                    colourlist
+                ); break;
+        }
     }
     function submitLocation() {
         // Get the value from the input field
@@ -55,9 +84,10 @@
             document.getElementById('address').innerText = results["SEARCHVAL"];
 
 
-
+            regenerateMap([new Map(
+                [['lat',1.34425141362649],['long',103.68681806227]] //sample eligible location
+                )],0);
             // Debug purposes
-            document.getElementById('debug').innerText = displayPinsUri(500,500,17,start,[start],[[0,0,255]]);
         }
         // Actually make it send the request
         addressResolveXHR.send();
