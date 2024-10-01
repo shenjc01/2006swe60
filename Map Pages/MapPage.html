@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <title>Title</title>
 </head>
-<body>
+<body onload="setDebugSessionStorage()">
 
 <!-- Input Field -->
 <input type="text" id="userInput" placeholder="Input Your Address or Postal Code">
 
 <!-- Button to trigger action -->
-<button onclick="submitLocation()">Submit</button>
+<button onclick="submitLocationAsync()">Submit</button>
 
 <!-- Area to display the input -->
 <p id="debug"></p>
@@ -19,7 +19,19 @@
 <img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=11&height=450&width=450&lat=1.366667&lng=103.8" alt="map of singapore">
 <!-- JavaScript code to handle the input -->
 <script>
+    function setDebugSessionStorage(){
+        sessionStorage.setItem("category","CashForTrash");
+    }
+    function getDebugSessionStorage(){
+        sessionStorage.getItem("category");
+    }
+
     let start = new Map();
+    let displayedlocations = [];
+    const locationDirectDistanceComparator = (a, b) =>
+        ((a["Longitude"]-start.get("long"))**2+(a["Latitude"]-start.get("lat"))**2)**0.5 -
+        ((b["Longitude"]-start.get("long"))**2+(b["Latitude"]-start.get("lat"))**2)**0.5;
+
     const addressResolverUri = str =>
         `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N`;
     function displayPinsUri(width, height, scale, centre, pointlist, colourlist){
@@ -36,10 +48,7 @@
 
             if (++i<pointlist.length) uri += "%7C"; // this is the delimiter, |
             else break;
-
-
         }
-        document.getElementById("debug").innerText = uri;
         return uri;
     }
     function regenerateMap(pointlist, mode=0){
@@ -59,22 +68,62 @@
                     if(x<left) left = x;
                     colourlist.push([0,0,100]);
                 }
-                document.getElementById('debug').innerText = ([start].concat(pointlist))[0].get("lat");
+
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 17,
-                    new Map([["lat",(top+bottom)/2],["long",(left+ right)/2]]),
+                    500, 500, 15,
+                    new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start].concat(pointlist),
                     colourlist
                 ); break;
         }
     }
+    async function submitLocationAsync() {
+        const input = document.getElementById('userInput').value;
+        const params = new URLSearchParams({
+            category: sessionStorage.getItem("category")
+        }).toString();
+        try {
+            // Await multiple fetch requests simultaneously
+            const [response1, response2] = await Promise.all([
+                fetch(addressResolverUri(input)),
+                fetch(window.location.href+`api/location?${params}`)
+            ]);
+            // Check if both responses are okay
+            if (!response1.ok) throw new Error(`Error fetching from ${url1}: ${response1.statusText}`);
+            if (!response2.ok) throw new Error(`Error fetching from ${url2}: ${response2.statusText}`);
+
+            // Await the parsing of both JSON responses
+            const [startjson, locationsjson] = await Promise.all([
+                response1.json(),
+                response2.json()
+            ]);
+
+
+            const results = startjson.results[0];
+            start.set('lat', results["LATITUDE"]);
+            start.set('long', results["LONGITUDE"]);
+
+            const locationcoords = locationsjson.sort(locationDirectDistanceComparator).
+            map(location =>
+                new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
+            ));
+            regenerateMap(locationcoords,0);
+            // Display the results
+        } catch (error) {
+            // Handle any errors
+            document.getElementById("debug").textContent = `Error: ${error.message}`;
+        }
+    }
     function submitLocation() {
         // Get the value from the input field
         const input = document.getElementById('userInput').value;
+
+
         // Create new request object for address resolving
         const addressResolveXHR = new XMLHttpRequest();
         // Add the url to request
-        addressResolveXHR.open("GET",addressResolverUri(input));
+        addressResolveXHR.open("GET",addressResolverUri(input),false);
+
         // Set behavior once request is completed (display the results)
         addressResolveXHR.onreadystatechange = () => {
             const results = JSON.parse(addressResolveXHR.responseText)["results"][0];
@@ -82,15 +131,18 @@
             start.set('long', results["LONGITUDE"]);
             document.getElementById('latlong').innerText = `lat: ${start.get("lat")} long: ${start.get("long")}`;
             document.getElementById('address').innerText = results["SEARCHVAL"];
-
-
-            regenerateMap([new Map(
-                [['lat',1.34425141362649],['long',103.68681806227]] //sample eligible location
-                )],0);
-            // Debug purposes
         }
+        const params = new URLSearchParams({
+            category: sessionStorage.getItem("category")
+        }).toString();
+        const getLocationsXHR = new XMLHttpRequest();
+        addressResolveXHR.open("GET",window.location.href+`api/location?${params}`,false);
         // Actually make it send the request
         addressResolveXHR.send();
+        regenerateMap([new Map(
+            [['lat',1.34425141362649],['long',103.68681806227]] //sample eligible location
+        )],0);
+        document.getElementById("debug").innerText = sessionStorage.getItem("category");
 
     }
 </script>
