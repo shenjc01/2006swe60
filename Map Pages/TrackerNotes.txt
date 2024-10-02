@@ -1,9 +1,12 @@
 Recently Achieved:
 [Map Page]
-Map page has an input field where you type in an address. After submit, it resolves the address and sends a get request to the server for locations. It then generates a map with the locations and the start plotted on it. All the locations are also sorted by distance to start.
+Map Page expects the sessionStorage to contain the recycle item category the users have selected. As all other pages are not made yet this is represented by a debug function that sets session storage variables upon entering the page.
 
-To test this, I also have a Go server running and SQLite database with a location entry, it will be pushed in a separate commit.
+Map Page has an input field where you type in an address. Upon submit, it resolves the address and sends a get request to the server for locations with the recycle item category from sesslon storage. It then generates a map with the locations and the start plotted on it. All the locations are also sorted by distance to start.
+
+To test this, I also have a Go server running and SQLite database with a location entry. To run the server, just run the exe.
 
 TODO:
-- Utilise session storage to record variables and ensure the get request has a recycle item category. <- working on this
+- Figure out how to group the locations into groups of ten.
+- Make a show more button.
 - Make the sidebar
