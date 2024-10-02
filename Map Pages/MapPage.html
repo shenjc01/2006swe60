@@ -58,7 +58,7 @@
                 let right = parseFloat(start.get("long"));
                 let top = parseFloat(start.get("lat"));
                 let bottom = parseFloat(start.get("lat"));
-                const colourlist = [[0, 0, 0]];
+                const colourlist = [[0, 0, 100]];
                 for(let i=0; i<pointlist.length; i++){
                     let y = parseFloat(pointlist[i].get("lat"));
                     let x = parseFloat(pointlist[i].get("long"));
@@ -66,11 +66,11 @@
                     if(y<bottom) bottom = y;
                     if(x>right) right = x;
                     if(x<left) left = x;
-                    colourlist.push([0,0,100]);
+                    colourlist.push([0,0,0]);
                 }
 
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 15,
+                    500, 500, 13,
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start].concat(pointlist),
                     colourlist
