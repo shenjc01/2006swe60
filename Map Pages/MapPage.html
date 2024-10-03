@@ -17,6 +17,7 @@
 <p id="latlong"></p>
 <p id="address"></p>
 <aside id="sidebar"></aside>
+<button id="submit" style="display: none" onclick="redirectToFinal()">Let's fucking go</button>
 <img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=11&height=450&width=450&lat=1.366667&lng=103.8" alt="map of singapore">
 <!-- JavaScript code to handle the input -->
 <script>
@@ -139,6 +140,7 @@
             new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
         ));
         regenerateMap(locationcoords,1);
+        document.getElementById("submit").style.display="block";
     }
     async function submitLocationAsync() {
         //Set displayed locations to 10 first. See more raises this
@@ -184,6 +186,11 @@
             // Handle any errors
             document.getElementById("debug").textContent = `Error: ${error.message}`;
         }
+    }
+    function redirectToFinal(){
+        sessionStorage.setItem("lat",selected.get("lat"));
+        sessionStorage.setItem("long",selected.get("long"));
+        window.location.href = "./final";
     }
 </script>
 
