@@ -16,18 +16,16 @@
 <p id="debug"></p>
 <p id="latlong"></p>
 <p id="address"></p>
+<aside id="sidebar"></aside>
 <img id="map" src="https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default&zoom=11&height=450&width=450&lat=1.366667&lng=103.8" alt="map of singapore">
 <!-- JavaScript code to handle the input -->
 <script>
-    function setDebugSessionStorage(){
-        sessionStorage.setItem("category","CashForTrash");
-    }
-    function getDebugSessionStorage(){
-        sessionStorage.getItem("category");
-    }
-
+    const setDebugSessionStorage = () => sessionStorage.setItem("category","RecycleBin");
     let start = new Map();
-    let displayedlocations = [];
+    let selected = new Map();
+    let locationjson;
+    const defaultdisplayNo = 8;
+    let displayedElementNo = defaultdisplayNo;
     const locationDirectDistanceComparator = (a, b) =>
         ((a["Longitude"]-start.get("long"))**2+(a["Latitude"]-start.get("lat"))**2)**0.5 -
         ((b["Longitude"]-start.get("long"))**2+(b["Latitude"]-start.get("lat"))**2)**0.5;
@@ -49,16 +47,17 @@
             if (++i<pointlist.length) uri += "%7C"; // this is the delimiter, |
             else break;
         }
+        document.getElementById("debug").innerText = uri;
         return uri;
     }
     function regenerateMap(pointlist, mode=0){
+        let left = parseFloat(start.get("long"));
+        let right = parseFloat(start.get("long"));
+        let top = parseFloat(start.get("lat"));
+        let bottom = parseFloat(start.get("lat"));
+        const colourlist = [[0, 0, 100]];
         switch(mode){
             case 0:
-                let left = parseFloat(start.get("long"));
-                let right = parseFloat(start.get("long"));
-                let top = parseFloat(start.get("lat"));
-                let bottom = parseFloat(start.get("lat"));
-                const colourlist = [[0, 0, 100]];
                 for(let i=0; i<pointlist.length; i++){
                     let y = parseFloat(pointlist[i].get("lat"));
                     let x = parseFloat(pointlist[i].get("long"));
@@ -70,14 +69,63 @@
                 }
 
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 13,
+                    500, 500, 14,
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start].concat(pointlist),
                     colourlist
                 ); break;
+            case 1:
+                colourlist.push([255,0,0]);
+                for(let i=0; i<pointlist.length; i++)
+                if(pointlist[i]!==selected){
+                    let y = parseFloat(pointlist[i].get("lat"));
+                    let x = parseFloat(pointlist[i].get("long"));
+                    if(y>top) top = y;
+                    if(y<bottom) bottom = y;
+                    if(x>right) right = x;
+                    if(x<left) left = x;
+                    colourlist.push([0,0,0]);
+                }
+
+                document.getElementById('map').src = displayPinsUri(
+                    500, 500, 14,
+                    new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
+                    [start,selected].concat(pointlist),
+                    colourlist
+                ); break;
         }
     }
+    function regenerateSidebar(){
+        const displaystring = locationjson.
+        sort(locationDirectDistanceComparator).
+        slice(0,displayedElementNo).
+        map(location =>
+            `${location["Name"]}\nAddress: ${location["Address"]}\nOpening Hours: ${location["Opening Hours"]}`
+        );
+        const locationcoords = locationjson.
+        slice(0,displayedElementNo).
+        map(location =>
+            new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
+        ));
+        for(let i=0;i<displaystring.length;i++){
+            const newbutton = document.createElement("button");
+            newbutton.innerText = displaystring[i];
+            newbutton.onclick = () => highlightSelected(locationcoords[i]);
+            document.getElementById("sidebar").appendChild(newbutton);
+        }
+    }
+    function highlightSelected(coord){
+        selected = coord;
+        const locationcoords = locationjson.
+        slice(0,displayedElementNo).
+        map(location =>
+            new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
+        ));
+        regenerateMap(locationcoords,1);
+    }
     async function submitLocationAsync() {
+        //Set displayed locations to 10 first. See more raises this
+        displayedElementNo = defaultdisplayNo;
         const input = document.getElementById('userInput').value;
         const params = new URLSearchParams({
             category: sessionStorage.getItem("category")
@@ -93,7 +141,8 @@
             if (!response2.ok) throw new Error(`Error fetching from location database: ${await response2.text()}`);
 
             // Await the parsing of both JSON responses
-            const [startjson, locationsjson] = await Promise.all([
+            let startjson;
+            [startjson, locationjson] = await Promise.all([
                 response1.json(),
                 response2.json()
             ]);
@@ -103,48 +152,21 @@
             start.set('lat', results["LATITUDE"]);
             start.set('long', results["LONGITUDE"]);
 
-            const locationcoords = locationsjson.sort(locationDirectDistanceComparator).
+            const locationcoords = locationjson.
+            sort(locationDirectDistanceComparator).
+            slice(0,displayedElementNo).
             map(location =>
                 new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
             ));
-            document.getElementById("debug").innerText = "Requests successful";
+            document.getElementById("debug").innerText = locationcoords.toString();
+
             regenerateMap(locationcoords,0);
+            regenerateSidebar();
             // Display the results
         } catch (error) {
             // Handle any errors
             document.getElementById("debug").textContent = `Error: ${error.message}`;
         }
-    }
-    function submitLocation() {
-        // Get the value from the input field
-        const input = document.getElementById('userInput').value;
-
-
-        // Create new request object for address resolving
-        const addressResolveXHR = new XMLHttpRequest();
-        // Add the url to request
-        addressResolveXHR.open("GET",addressResolverUri(input),false);
-
-        // Set behavior once request is completed (display the results)
-        addressResolveXHR.onreadystatechange = () => {
-            const results = JSON.parse(addressResolveXHR.responseText)["results"][0];
-            start.set('lat', results["LATITUDE"]);
-            start.set('long', results["LONGITUDE"]);
-            document.getElementById('latlong').innerText = `lat: ${start.get("lat")} long: ${start.get("long")}`;
-            document.getElementById('address').innerText = results["SEARCHVAL"];
-        }
-        const params = new URLSearchParams({
-            category: sessionStorage.getItem("category")
-        }).toString();
-        const getLocationsXHR = new XMLHttpRequest();
-        addressResolveXHR.open("GET",window.location.href+`api/location?${params}`,false);
-        // Actually make it send the request
-        addressResolveXHR.send();
-        regenerateMap([new Map(
-            [['lat',1.34425141362649],['long',103.68681806227]] //sample eligible location
-        )],0);
-        document.getElementById("debug").innerText = sessionStorage.getItem("category");
-
     }
 </script>
 
