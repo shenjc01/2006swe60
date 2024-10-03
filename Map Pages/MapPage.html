@@ -156,7 +156,7 @@
                 fetch(window.location.href+`api/location?${params}`)
             ]);
             // Check if both responses are okay
-            if (!response1.ok) throw new Error(`Error fetching from address resolver: ${response1.statusText}`);
+            if (!response1.ok) throw new Error(`Error fetching from address resolver: ${await response1.text()}`);
             if (!response2.ok) throw new Error(`Error fetching from location database: ${await response2.text()}`);
 
             // Await the parsing of both JSON responses
