@@ -5,11 +5,17 @@
     <title>Title</title>
 </head>
 <body onload="getSession()">
-  <p id="debug"> THIS PAGE LOADED, TRUST</p>
+    <p id="debug"> THIS PAGE LOADED, TRUST</p>
+    <img id="qr" alt="QR Code" src="">
 </body>
 <script>
+  const gMapUriBuilder = (lat, long) => `https://www.google.com/maps/place/${lat}+${long}`;
+  const QRCodeBuilder = str => 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data='+encodeURIComponent(str)
   function getSession(){
-    document.getElementById("debug").innerText = sessionStorage.getItem("lat") + sessionStorage.getItem("long");
+      const lat = sessionStorage.getItem("lat");
+      const long = sessionStorage.getItem("long");
+      document.getElementById("debug").innerText = QRCodeBuilder(gMapUriBuilder(lat, long));
+      document.getElementById("qr").src = QRCodeBuilder(gMapUriBuilder(lat, long));
   }
 </script>
 </html>
