@@ -29,7 +29,21 @@
     const locationDirectDistanceComparator = (a, b) =>
         ((a["Longitude"]-start.get("long"))**2+(a["Latitude"]-start.get("lat"))**2)**0.5 -
         ((b["Longitude"]-start.get("long"))**2+(b["Latitude"]-start.get("lat"))**2)**0.5;
-
+    function compareMaps(map1, map2) {
+        let testVal;
+        if (map1.size !== map2.size) {
+            return false;
+        }
+        for (let [key, val] of map1) {
+            testVal = map2.get(key);
+            // in cases of an undefined value, make sure the key
+            // actually exists on the object so there are no false positives
+            if (testVal !== val || (testVal === undefined && !map2.has(key))) {
+                return false;
+            }
+        }
+        return true;
+    }
     const addressResolverUri = str =>
         `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N`;
     function displayPinsUri(width, height, scale, centre, pointlist, colourlist){
@@ -51,6 +65,7 @@
         return uri;
     }
     function regenerateMap(pointlist, mode=0){
+        let temp = pointlist.slice();
         let left = parseFloat(start.get("long"));
         let right = parseFloat(start.get("long"));
         let top = parseFloat(start.get("lat"));
@@ -69,15 +84,15 @@
                 }
 
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 14,
+                    500, 500, 15,
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
                     [start].concat(pointlist),
                     colourlist
                 ); break;
             case 1:
                 colourlist.push([255,0,0]);
-                for(let i=0; i<pointlist.length; i++)
-                if(pointlist[i]!==selected){
+                let elementno = 0;
+                for(let i=0; i<pointlist.length; i++){
                     let y = parseFloat(pointlist[i].get("lat"));
                     let x = parseFloat(pointlist[i].get("long"));
                     if(y>top) top = y;
@@ -85,12 +100,13 @@
                     if(x>right) right = x;
                     if(x<left) left = x;
                     colourlist.push([0,0,0]);
+                    if(compareMaps(pointlist[i],selected)) elementno=i;
                 }
-
+                temp.splice(elementno,1);
                 document.getElementById('map').src = displayPinsUri(
-                    500, 500, 14,
+                    500, 500, 15,
                     new Map([["lat",(top+bottom)/2],["long",(left+right)/2]]),
-                    [start,selected].concat(pointlist),
+                    [start,selected].concat(temp),
                     colourlist
                 ); break;
         }
@@ -107,6 +123,7 @@
         map(location =>
             new Map([["long",location["Longitude"]],["lat",location["Latitude"]]]
         ));
+        document.getElementById("sidebar").textContent = '';
         for(let i=0;i<displaystring.length;i++){
             const newbutton = document.createElement("button");
             newbutton.innerText = displaystring[i];
