@@ -42,17 +42,20 @@
     }
 
     // Convert PEM public key string to a CryptoKey object
-    function importRSAPublicKey(pemKey) {
+    function importRSAPublicKey(pem) {
         // Remove the PEM header/footer and decode base64
-        document.getElementById("debug").innerText = pemKey.toString();
-        const b64 = pemKey.replace(/-----[^-]+-----/g, "").replace(/\n/g, "");
-        document.getElementById("debug").innerText = b64;
-        const binaryDerString = window.atob(b64);
+        document.getElementById("debug").innerText = pem.toString();
+        const pemHeader = "-----BEGIN PUBLIC KEY-----";
+        const pemFooter = "-----END PUBLIC KEY-----";
+        const pemContents = pem.substring(
+            pemHeader.length,
+            pem.length - pemFooter.length - 1,
+        );
+        document.getElementById("debug").innerText = pemContents;
+        const binaryDerString = window.atob(pemContents);
         // convert from a binary string to an ArrayBuffer
         const binaryDer = str2ab(binaryDerString);
-        let key;
-        try{
-            key = crypto.subtle.importKey(
+        return crypto.subtle.importKey(
                 "spki",
                 binaryDer,
                 {
@@ -62,36 +65,6 @@
                 false, // non-extractable key
                 ["encrypt"] // restrict usage to encryption
             );
-        } catch (e){
-            document.getElementById("debug").innerText = e.innerText;
-            throw new Error(e.innerText);
-        }
-        document.getElementById("debug").innerText = "Got here";
-        return key;
-    }
-    // Encrypt the AES key using the RSA public key
-    async function encryptAESKeyWithRSA(aesKey, publicKey) {
-        // Export the AES key to a raw format (ArrayBuffer)
-        const exported = await window.crypto.subtle.exportKey("raw", aesKey);
-        const exportedKeyBuffer = new Uint8Array(exported);
-        document.getElementById("debug").innerText =  `[${exportedKeyBuffer}]`;
-        // Encrypt the AES key with the RSA public key
-        return crypto.subtle.encrypt(
-            {
-                name: "RSA-OAEP"
-            },
-            publicKey,
-            rawAESKey
-        );
-    }
-    // Send the encrypted AES key to the server
-    async function sendEncryptedAESKey(clientID, encryptedAESKey) {
-        // Send the encrypted AES key as binary data
-        await fetch(`/sendkey?clientID=${clientID}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/octet-stream' },
-            body: encryptedAESKey
-        });
     }
 
     async function onSubmit(){
@@ -104,18 +77,37 @@
         // Step 2: Fetch the RSA Public Key from the server
         const uri = `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/getkey?sessionID=${username}`;
         document.getElementById("debug").innerText = uri;
-        const response = await fetch(uri);
+        let response = await fetch(uri);
         const pemKey = await response.text();
         document.getElementById("debug").innerText = "Successful Fetch";
-        const rsaPublicKey = importRSAPublicKey(pemKey);
+        const rsaPublicKey = await importRSAPublicKey(pemKey).
+            catch(err=>document.getElementById("debug").innerText=err);
         document.getElementById("debug").innerText = "Successful Integration";
         // Step 3: Encrypt the AES Key with the RSA Public Key
-        const encryptedAESKey = await encryptAESKeyWithRSA(aesKey, rsaPublicKey);
+        // Export the AES key to a raw format (ArrayBuffer)
+        const exported = await window.crypto.subtle.exportKey("raw", aesKey);
+        const exportedKeyBuffer = new Uint8Array(exported);
+        document.getElementById("debug").innerText =  `[${exportedKeyBuffer}]`;
+        // Encrypt the AES key with the RSA public key
+        const promise = crypto.subtle.encrypt(
+            {
+                name: "RSA-OAEP"
+            },
+            rsaPublicKey,
+            exportedKeyBuffer,
+        );
+        document.getElementById("debug").innerText = "awaiting promise";
+        const encryptedAESKey = await promise.
+            catch(err=>document.getElementById("debug").innerText=err);
         document.getElementById("debug").innerText = "Key Encrypted";
         // Step 4: Send the Encrypted AES Key to the server
-        await sendEncryptedAESKey(username, encryptedAESKey);
+        response = await fetch(`/sendkey?sessionID=${username}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: encryptedAESKey
+        });
         document.getElementById("debug").innerText = "Key Sent";
-        document.getElementById("debug").innerText = "An attempt was made";
+        document.getElementById("debug").innerText = await response.text();
     }
 </script>
 </body>

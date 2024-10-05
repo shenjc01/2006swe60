@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
+	"io"
 	"net/http"
 )
 
@@ -23,9 +24,13 @@ func generateClientKey(sessionID string) error {
 		Type:  "RSA PRIVATE KEY",
 		Bytes: x509.MarshalPKCS1PrivateKey(privateKey),
 	})
+	spkiBytes, err := x509.MarshalPKIXPublicKey(&privateKey.PublicKey)
+	if err != nil {
+		return err
+	}
 	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "RSA PUBLIC KEY",
-		Bytes: x509.MarshalPKCS1PublicKey(&privateKey.PublicKey),
+		Type:  "PUBLIC KEY",
+		Bytes: spkiBytes,
 	})
 
 	// Store keys in the database
@@ -68,7 +73,7 @@ func storeAESKey(clientID string, aesKey []byte) error {
 
 // Decrypt AES key received from client and store it in the database
 func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
-	clientID := r.URL.Query().Get("clientID")
+	clientID := r.URL.Query().Get("sessionID")
 	if clientID == "" {
 		http.Error(w, "Missing clientID", http.StatusBadRequest)
 		return
@@ -95,12 +100,17 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Read the encrypted AES key from the request body
-	encryptedAESKey := make([]byte, r.ContentLength)
-	_, err = r.Body.Read(encryptedAESKey)
+
+	encryptedAESKey, err := io.ReadAll(r.Body)
 	if err != nil {
+		fmt.Printf("Failed to read encrypted AES key: %v\n", err)
+
 		http.Error(w, "Failed to read encrypted AES key", http.StatusBadRequest)
 		return
 	}
+	fmt.Printf("Content-Length: %d\n", r.ContentLength)
+	fmt.Printf("Request Headers: %+v\n", r.Header)
+	fmt.Printf("Body length: %d\n", len(encryptedAESKey))
 
 	// Decrypt the AES key using the client's private key
 	aesKey, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, encryptedAESKey)
