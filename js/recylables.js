@@ -1,5 +1,4 @@
 function storerecyclingtype() {
-    
     const plasticBottlesSelected = document.getElementById("plasticBottles").checked;
     const cansSelected = document.getElementById("cans").checked;
     const anythElseSelected = document.getElementById("glass").checked || 
@@ -7,10 +6,16 @@ function storerecyclingtype() {
                           document.getElementById("plasticBag").checked || 
                           document.getElementById("others").checked;
 
+    // console.log("Plastic Bottles Selected:", plasticBottlesSelected);
+    // console.log("Cans Selected:", cansSelected);
+    // console.log("Any Other Selected:", anythElseSelected);
+
     if ((plasticBottlesSelected || cansSelected) && !anythElseSelected) {
         sessionStorage.setItem("category", "recyclensave");
+        // console.log("Category set to: recyclensave");
     } else if (anythElseSelected) {
         sessionStorage.setItem("category", "cashfortrash");
+        // console.log("Category set to: cashfortrash");
     }
 }
 
