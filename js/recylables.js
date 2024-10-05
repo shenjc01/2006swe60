@@ -11,11 +11,11 @@ function storerecyclingtype() {
     // console.log("Any Other Selected:", anythElseSelected);
 
     if ((plasticBottlesSelected || cansSelected) && !anythElseSelected) {
-        sessionStorage.setItem("category", "recyclensave");
-        // console.log("Category set to: recyclensave");
+        sessionStorage.setItem("category", "RecycleNSave");
+        // console.log("Category set to: RecycleNSave");
     } else if (anythElseSelected) {
-        sessionStorage.setItem("category", "cashfortrash");
-        // console.log("Category set to: cashfortrash");
+        sessionStorage.setItem("category", "CashForTrash");
+        // console.log("Category set to: CashForTrash");
     }
 }
 
@@ -23,7 +23,7 @@ function storerecyclingtype() {
 function nextpage()
 {
     storerecyclingtype();
-    
+    window.location.href = `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/map`
      const category = sessionStorage.getItem("category");
      console.log("Category:", category);
 
