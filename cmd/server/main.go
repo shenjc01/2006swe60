@@ -18,6 +18,10 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/MapPage.html")
 	})
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/landing page.html")
+	})
 	http.HandleFunc("/recycleables", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/recylables.html")

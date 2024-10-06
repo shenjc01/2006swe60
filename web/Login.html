@@ -99,7 +99,7 @@
         const exportedKeyBuffer = new Uint8Array(exported);
         document.getElementById("debug").innerText =  `[${exportedKeyBuffer}]`;
         // Encrypt the AES key with the RSA public key
-        const promise = crypto.subtle.encrypt(
+        const aespromise = crypto.subtle.encrypt(
             {
                 name: "RSA-OAEP"
             },
@@ -107,7 +107,7 @@
             exported,
         );
         document.getElementById("debug").innerText = "awaiting promise";
-        const encryptedAESKey = await promise.
+        const encryptedAESKey = await aespromise.
             catch(err=>document.getElementById("debug").innerText=err);
         document.getElementById("debug").innerText = "Key Encrypted";
         // Step 4: Send the Encrypted AES Key to the server
@@ -119,6 +119,14 @@
         document.getElementById("debug").innerText = "Key Sent";
         document.getElementById("debug").innerText = await response.text();
         document.getElementById("debug").innerText = `${_arrayBufferToBase64(encryptedAESKey)}`;
+
+        const pwpromise = crypto.subtle.encrypt(
+            {
+                name: "RSA-OAEP"
+            },
+            aesKey,
+            password,
+        );
     }
 </script>
 </body>
