@@ -20,6 +20,16 @@
         }
         return buf;
     }
+    function _arrayBufferToBase64( buffer ) {
+        var binary = '';
+        var bytes = new Uint8Array( buffer );
+        var len = bytes.byteLength;
+        for (var i = 0; i < len; i++) {
+            binary += String.fromCharCode( bytes[ i ] );
+        }
+        return window.btoa( binary );
+    }
+
     async function generateAESKey() {
         return crypto.subtle.generateKey(
             {
@@ -94,7 +104,7 @@
                 name: "RSA-OAEP"
             },
             rsaPublicKey,
-            exportedKeyBuffer,
+            exported,
         );
         document.getElementById("debug").innerText = "awaiting promise";
         const encryptedAESKey = await promise.
@@ -108,6 +118,7 @@
         });
         document.getElementById("debug").innerText = "Key Sent";
         document.getElementById("debug").innerText = await response.text();
+        document.getElementById("debug").innerText = `${_arrayBufferToBase64(encryptedAESKey)}`;
     }
 </script>
 </body>

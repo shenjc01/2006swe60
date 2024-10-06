@@ -3,7 +3,9 @@ package internal
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
@@ -67,7 +69,7 @@ func storeAESKey(clientID string, aesKey []byte) error {
 	// Store the AES key in hex format
 	aesKeyHex := hex.EncodeToString(aesKey)
 
-	_, err := DB.Exec("UPDATE client_keys SET aes_key = ? WHERE client_id = ?", aesKeyHex, clientID)
+	_, err := DB.Exec("UPDATE SessionKeys SET aesKey = ? WHERE sessionID = ?", aesKeyHex, clientID)
 	return err
 }
 
@@ -104,23 +106,28 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 	encryptedAESKey, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Printf("Failed to read encrypted AES key: %v\n", err)
-
 		http.Error(w, "Failed to read encrypted AES key", http.StatusBadRequest)
 		return
 	}
+	// Convert to base64 string
+	base64String := base64.StdEncoding.EncodeToString(encryptedAESKey)
 	fmt.Printf("Content-Length: %d\n", r.ContentLength)
+	fmt.Printf("Actual-Length: %d\n", len(encryptedAESKey))
 	fmt.Printf("Request Headers: %+v\n", r.Header)
-	fmt.Printf("Body length: %d\n", len(encryptedAESKey))
+	fmt.Printf("Key: %s\n", base64String)
 
 	// Decrypt the AES key using the client's private key
-	aesKey, err := rsa.DecryptPKCS1v15(rand.Reader, privateKey, encryptedAESKey)
+	hash := sha256.New()
+	aesKey, err := rsa.DecryptOAEP(hash, rand.Reader, privateKey, encryptedAESKey, nil)
 	if err != nil {
+		fmt.Printf("Failed to decrypt AES key. Error: %v\nEncrypted Key: %x\n", err, encryptedAESKey)
 		http.Error(w, "Failed to decrypt AES key", http.StatusInternalServerError)
 		return
 	}
 
 	// Store the AES key in the database
 	if err := storeAESKey(clientID, aesKey); err != nil {
+		fmt.Printf("Failed to store AES key. Error: %v\n", err)
 		http.Error(w, "Failed to store AES key", http.StatusInternalServerError)
 		return
 	}
@@ -131,8 +138,9 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 // Retrieve the AES key for a client
 func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
-	err := DB.QueryRow("SELECT aes_key FROM client_keys WHERE client_id = ?", clientID).Scan(&aesKeyHex)
+	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE client_id = ?", clientID).Scan(&aesKeyHex)
 	if err != nil {
+
 		return nil, err
 	}
 
