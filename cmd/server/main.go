@@ -34,6 +34,11 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/FinalPage.html")
 	})
+	http.HandleFunc("/register", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/register.html")
+	})
+	http.HandleFunc("/registerProcess", internal.RegisterUser)
 
 	// Set up API endpoint for data
 	http.HandleFunc("/api/location", internal.GetLocation) // GET requests for location
