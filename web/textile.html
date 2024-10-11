@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textile Waste Recycling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .Proceed-button {
+            background-color: #4E7A6A;
+            color: white;
+            cursor: pointer;
+            font-size: 24px;
+            padding: 10px 20px;
+            margin: 10px;
+        }
+
+        .quantity-container {
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .qr-code-container {
+            margin-top: 20px;
+        }
+
+        .options-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Recycle Your Textile Waste</h1>
+
+    <div class="quantity-container">
+        <label for="textileQuantity">Enter the quantity of textile waste (minimum 10 items):</label>
+        <input type="number" id="textileQuantity" min="0" />
+        <button class="Proceed-button" onclick="selectMethod()">Proceed</button>
+    </div>
+
+    <div class="options-container hidden" id="optionsContainer">
+        <h2>Select Your Preferred Method</h2>
+        <button class="Proceed-button" onclick="selectDropOff()">Drop Off</button>
+        <button class="Proceed-button" onclick="redirectToRefash()">Pick Up</button>
+    </div>
+
+    <div class="qr-code-container hidden" id="qrCodeContainer">
+        <h2>Your Recycling Location</h2>
+        <img src="path/to/your-qr-code.png" alt="QR Code" id="qrCode" />
+        <p>Click the QR code to open Google Maps.</p>
+    </div>
+
+    <script src="js/textile.js"></script>
+</body>
+
+</html>
