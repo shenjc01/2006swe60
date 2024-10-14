@@ -52,19 +52,19 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var publicKey string
-	err := DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = ?", sessionID).Scan(&publicKey)
+	err := DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = (?)", sessionID).Scan(&publicKey)
 	if err != nil {
 		err := generateClientKey(sessionID)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = ?", sessionID).Scan(&publicKey)
-		return
+		err = DB.QueryRow("SELECT publicKey FROM SessionKeys WHERE sessionID = (?)", sessionID).Scan(&publicKey)
 	}
 
 	w.Header().Set("Content-Type", "application/x-pem-file")
 	w.Write([]byte(publicKey))
+	fmt.Printf("%x", publicKey)
 }
 
 // Store the decrypted AES key in the database for the client
@@ -72,7 +72,7 @@ func storeAESKey(clientID string, aesKey []byte) error {
 	// Store the AES key in hex format
 	aesKeyHex := hex.EncodeToString(aesKey)
 
-	_, err := DB.Exec("UPDATE SessionKeys SET aesKey = ? WHERE sessionID = ?", aesKeyHex, clientID)
+	_, err := DB.Exec("UPDATE SessionKeys SET aesKey = (?) WHERE sessionID = (?)", aesKeyHex, clientID)
 	return err
 }
 
@@ -86,7 +86,7 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve the private key from the database
 	var privateKeyPEM string
-	err := DB.QueryRow("SELECT privateKey FROM SessionKeys WHERE sessionID = ?", clientID).Scan(&privateKeyPEM)
+	err := DB.QueryRow("SELECT privateKey FROM SessionKeys WHERE sessionID = (?)", clientID).Scan(&privateKeyPEM)
 	if err != nil {
 		http.Error(w, "SessionID not found", http.StatusNotFound)
 		return
@@ -141,7 +141,7 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 // Retrieve the AES key for a client
 func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
-	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE sessionID = ?", clientID).Scan(&aesKeyHex)
+	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE sessionID = (?)", clientID).Scan(&aesKeyHex)
 	if err != nil {
 
 		return nil, err
@@ -154,6 +154,7 @@ func getAESKey(clientID string) ([]byte, error) {
 
 func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	type EncryptedDataRequest struct {
+		SessionID  string `json:"sessionid"`
 		Username   string `json:"username"`
 		Ciphertext string `json:"ciphertext"`
 		IV         string `json:"iv"`
@@ -181,13 +182,14 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Now you have the username, ciphertext (byte slice), and IV (byte slice)
+	fmt.Printf("SessionID: %s\n", req.SessionID)
 	fmt.Printf("Username: %s\n", req.Username)
 	fmt.Printf("Ciphertext: %x\n", ciphertext) // Print ciphertext in hex
 	fmt.Printf("IV: %x\n", iv)                 // Print IV in hex
 	// Respond with a success message
 	w.Write([]byte("Data received successfully"))
 
-	key, err := getAESKey(req.Username)
+	key, err := getAESKey(req.SessionID)
 	if err != nil {
 		fmt.Printf("Failed to retrieve AES key. Error: %v\n", err)
 		return

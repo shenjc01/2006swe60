@@ -80,18 +80,21 @@
     async function onSubmit(){
         const username = document.getElementById("usernameBox").value;
         const password = document.getElementById("passwordBox").value;
+        sessionStorage.setItem("sessionID",btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replace('+',''));
+        const sessionID = sessionStorage.getItem("sessionID");
         document.getElementById("debug").innerText = "Received";
         // Step 1: Generate AES Key
         const aesKey = await generateAESKey();
         document.getElementById("debug").innerText = "Key Generated";
         // Step 2: Fetch the RSA Public Key from the server
-        const uri = `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/getkey?sessionID=${username}`;
+        const uri = `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/getkey?sessionID=${sessionID}`;
         document.getElementById("debug").innerText = uri;
         let response = await fetch(uri);
         const pemKey = await response.text();
-        document.getElementById("debug").innerText = "Successful Fetch";
+        document.getElementById("debug").innerText = `Successful Fetch\nKey: ${_arrayBufferToBase64(pemKey)}`;
         const rsaPublicKey = await importRSAPublicKey(pemKey).
             catch(err=>document.getElementById("debug").innerText=err);
+
         document.getElementById("debug").innerText = "Successful Integration";
         // Step 3: Encrypt the AES Key with the RSA Public Key
         // Export the AES key to a raw format (ArrayBuffer)
@@ -109,9 +112,9 @@
         document.getElementById("debug").innerText = "awaiting promise";
         const encryptedAESKey = await aespromise.
             catch(err=>document.getElementById("debug").innerText=err);
-        document.getElementById("debug").innerText = "Key Encrypted";
+        document.getElementById("debug").innerText = `Key Encrypted: ${encryptedAESKey}`;
         // Step 4: Send the Encrypted AES Key to the server
-        response = await fetch(`/sendkey?sessionID=${username}`, {
+        response = await fetch(`/sendkey?sessionID=${sessionID}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/octet-stream' },
             body: encryptedAESKey
@@ -123,6 +126,7 @@
         document.getElementById("debug").innerText = `Encryped Password = ${_arrayBufferToBase64(ciphertext)}`;
         // Convert ciphertext and iv to base64 strings for transport
         const payload = {
+            sessionid: sessionID,
             username: username, // Send the username as a string
             ciphertext: _arrayBufferToBase64(ciphertext), // Convert ciphertext to base64
             iv: _arrayBufferToBase64(iv) // Convert IV to base64
