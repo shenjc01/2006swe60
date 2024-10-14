@@ -118,15 +118,44 @@
         });
         document.getElementById("debug").innerText = "Key Sent";
         document.getElementById("debug").innerText = await response.text();
-        document.getElementById("debug").innerText = `${_arrayBufferToBase64(encryptedAESKey)}`;
-
-        const pwpromise = crypto.subtle.encrypt(
+        document.getElementById("debug").innerText = `Encrypted AES Key ${_arrayBufferToBase64(encryptedAESKey)}`;
+        const {ciphertext, iv} = await encryptData(aesKey, password);
+        document.getElementById("debug").innerText = `Encryped Password = ${_arrayBufferToBase64(ciphertext)}`;
+        // Convert ciphertext and iv to base64 strings for transport
+        const payload = {
+            username: username, // Send the username as a string
+            ciphertext: _arrayBufferToBase64(ciphertext), // Convert ciphertext to base64
+            iv: _arrayBufferToBase64(iv) // Convert IV to base64
+        };
+        response = await fetch('/loginattempt', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }, // JSON content type
+            body: JSON.stringify(payload) // Convert payload to JSON
+        });
+        if (response.ok) {
+            document.getElementById("debug").innerText = "Data sent successfully";
+        } else {
+            document.getElementById("debug").innerText = await response.text();
+        }
+    }
+    async function encryptData(aesKey, plaintext) {
+        document.getElementById("debug").innerText ="Password encryption attempted";
+        const iv =  crypto.getRandomValues(new Uint8Array(12)); // Generate a unique IV
+        const encoder = new TextEncoder();
+        const encodedPlaintext = encoder.encode(plaintext); // Convert the plaintext to a Uint8Array
+        document.getElementById("debug").innerText = "Plaintext now bitarray";
+        // Encrypt the data
+        const ciphertext = await crypto.subtle.encrypt(
             {
-                name: "RSA-OAEP"
+                name: "AES-GCM",
+                iv: iv, // The generated IV
+                // optional: additionalData: encoder.encode("metadata"), // Optional AAD
+                // optional: tagLength: 128, // Optional, default is 128 bits
             },
-            aesKey,
-            password,
-        );
+            aesKey, // CryptoKey object for AES
+            encodedPlaintext // The data to be encrypted (Uint8Array)
+        ).catch(err=>document.getElementById("debug").innerText=err);
+        return {ciphertext, iv};
     }
 </script>
 </body>

@@ -30,6 +30,10 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/ewaste.html")
 	})
+	http.HandleFunc("/textiles", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/textile.html")
+	})
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/Login.html")
@@ -49,6 +53,7 @@ func main() {
 	http.HandleFunc("/api/locationcomment/", internal.GetLocationComment)
 	http.HandleFunc("/getkey", internal.ServeClientPublicKey)
 	http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
+	http.HandleFunc("/loginattempt", internal.AttemptLogin)
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")

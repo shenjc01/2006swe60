@@ -1,12 +1,15 @@
 package internal
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
@@ -138,7 +141,7 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 // Retrieve the AES key for a client
 func getAESKey(clientID string) ([]byte, error) {
 	var aesKeyHex string
-	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE client_id = ?", clientID).Scan(&aesKeyHex)
+	err := DB.QueryRow("SELECT aeskey FROM SessionKeys WHERE sessionID = ?", clientID).Scan(&aesKeyHex)
 	if err != nil {
 
 		return nil, err
@@ -147,4 +150,69 @@ func getAESKey(clientID string) ([]byte, error) {
 	// Decode the hex format AES key to bytes
 	aesKey, err := hex.DecodeString(aesKeyHex)
 	return aesKey, err
+}
+
+func AttemptLogin(w http.ResponseWriter, r *http.Request) {
+	type EncryptedDataRequest struct {
+		Username   string `json:"username"`
+		Ciphertext string `json:"ciphertext"`
+		IV         string `json:"iv"`
+	}
+	var req EncryptedDataRequest
+
+	// Parse the JSON body
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Base64 decode the ciphertext and IV
+	ciphertext, err := base64.StdEncoding.DecodeString(req.Ciphertext)
+	if err != nil {
+		http.Error(w, "Invalid base64 ciphertext", http.StatusBadRequest)
+		return
+	}
+
+	iv, err := base64.StdEncoding.DecodeString(req.IV)
+	if err != nil {
+		http.Error(w, "Invalid base64 IV", http.StatusBadRequest)
+		return
+	}
+
+	// Now you have the username, ciphertext (byte slice), and IV (byte slice)
+	fmt.Printf("Username: %s\n", req.Username)
+	fmt.Printf("Ciphertext: %x\n", ciphertext) // Print ciphertext in hex
+	fmt.Printf("IV: %x\n", iv)                 // Print IV in hex
+	// Respond with a success message
+	w.Write([]byte("Data received successfully"))
+
+	key, err := getAESKey(req.Username)
+	if err != nil {
+		fmt.Printf("Failed to retrieve AES key. Error: %v\n", err)
+		return
+	}
+	// Step 1: Create a new AES cipher block
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Printf("failed to create AES cipher: %v", err)
+	}
+
+	// Step 2: Create a GCM cipher mode (Galois/Counter Mode)
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		fmt.Printf("failed to create GCM mode: %v", err)
+	}
+
+	// Step 3: Decrypt the ciphertext using the GCM cipher and the IV
+	// gcm.Open expects the IV, ciphertext, and additional data (nil if not used)
+	plaintext, err := gcm.Open(nil, iv, ciphertext, nil)
+	if err != nil {
+		fmt.Printf("failed to decrypt: %v", err)
+	}
+
+	// Step 2: Convert the byte array back to the original string
+	originalString := string(plaintext)
+
+	fmt.Printf("Original string: %s\n", originalString)
 }
