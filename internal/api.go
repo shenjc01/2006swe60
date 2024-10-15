@@ -3,9 +3,14 @@ package internal
 import (
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/rand"
+	"database/sql"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"net/http"
 )
 
@@ -141,8 +146,6 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Username: %s\n", req.Username)
 	fmt.Printf("Ciphertext: %x\n", ciphertext) // Print ciphertext in hex
 	fmt.Printf("IV: %x\n", iv)                 // Print IV in hex
-	// Respond with a success message
-	w.Write([]byte("Data received successfully"))
 
 	key, err := getAESKey(req.SessionID)
 	if err != nil {
@@ -153,12 +156,14 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		fmt.Printf("failed to create AES cipher: %v", err)
+		return
 	}
 
 	// Step 2: Create a GCM cipher mode (Galois/Counter Mode)
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		fmt.Printf("failed to create GCM mode: %v", err)
+		return
 	}
 
 	// Step 3: Decrypt the ciphertext using the GCM cipher and the IV
@@ -166,10 +171,86 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	plaintext, err := gcm.Open(nil, iv, ciphertext, nil)
 	if err != nil {
 		fmt.Printf("failed to decrypt: %v", err)
+		return
 	}
 
 	// Step 2: Convert the byte array back to the original string
-	originalString := string(plaintext)
+	password := plaintext
+	username := req.Username
+	fmt.Printf("Original string: %x\n", password)
 
-	fmt.Printf("Original string: %s\n", originalString)
+	var hashedPassword string
+	// SQL query to retrieve the hashed password for the given username
+	query := `SELECT hashedPassword FROM Users WHERE username = ?`
+
+	// Execute the query and scan the result into the hashedPassword variable
+	err = DB.QueryRow(query, username).Scan(&hashedPassword)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Printf("username %s not found", username) // Username doesn't exist
+			return
+		}
+		fmt.Println(err) // Some other error occurred
+		return
+	}
+	fmt.Printf("Hashed Password Retrieved: %s\n", hashedPassword)
+
+	var salt string
+	query = `SELECT salt FROM Users WHERE username = ?`
+	err = DB.QueryRow(query, username).Scan(&salt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Printf("username %s not found", username) // Username doesn't exist
+			return
+		}
+		fmt.Println(err) // Some other error occurred
+		return
+	}
+	fmt.Printf("Hashed Password Retrieved: %s\n", hashedPassword)
+	hashedPasswordBytes, err := hex.DecodeString(hashedPassword)
+	if err != nil {
+		fmt.Printf("failed to decode hex string of password: %v", err)
+		return
+	}
+	saltBytes, err := hex.DecodeString(salt)
+	if err != nil {
+		fmt.Printf("failed to decode hex string of salt: %v", err)
+		return
+	}
+	err = bcrypt.CompareHashAndPassword(hashedPasswordBytes, append(saltBytes, password...))
+	if err != nil {
+		fmt.Printf("Password mismatch %v", err)
+		http.Error(w, `Password mismatch`, http.StatusBadRequest)
+		return
+	}
+
+	loginIDBytes := make([]byte, 16)
+	_, err = rand.Read(loginIDBytes)
+	if err != nil {
+		fmt.Printf("failed to generate login ID: %v", err)
+		return
+	}
+	loginID := hex.EncodeToString(loginIDBytes)
+
+	_, err = DB.Exec(`
+		INSERT INTO LoggedIn (Username, LoginID) 
+		VALUES (?, ?)
+		ON CONFLICT(username) DO UPDATE SET LoginID = ?`, username, loginID, loginID)
+	if err != nil {
+		fmt.Printf("Failed to insert session: %v", err)
+	}
+
+	cookie := &http.Cookie{
+		Name:     "loginID",
+		Value:    loginID,
+		Path:     "/",
+		HttpOnly: true,  // Protect from JavaScript access
+		Secure:   false, // Only send over HTTPS
+		MaxAge:   3600,  // Optional: set expiration in seconds (1 hour here)
+	}
+	http.SetCookie(w, cookie)
+	fmt.Println("Cookie Set")
+
+	// Respond with a success message
+	w.Write([]byte("Data received successfully"))
 }

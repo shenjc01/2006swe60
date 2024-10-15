@@ -46,7 +46,10 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/register.html")
 	})
-	http.HandleFunc("/registerProcess", internal.RegisterUser)
+	http.HandleFunc("/bookmarks", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/BookmarksPage.html")
+	})
 
 	// Set up API endpoint for data
 	http.HandleFunc("/api/location", internal.GetLocation) // GET requests for location
@@ -54,6 +57,8 @@ func main() {
 	http.HandleFunc("/getkey", internal.ServeClientPublicKey)
 	http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
 	http.HandleFunc("/loginattempt", internal.AttemptLogin)
+	http.HandleFunc("/getUser", internal.GetUser)
+	http.HandleFunc("/registerProcess", internal.RegisterUser)
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")

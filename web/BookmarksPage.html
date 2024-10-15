@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body onload="onLoad()">
+<h1 id="debug"></h1>
+</body>
+<script>
+    async function onLoad(){
+        try {
+            const response = await fetch('/getUser', {
+                method: 'POST',
+                credentials: 'include',  // Important: This ensures cookies are sent with the request
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})  // Sending an empty body
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Session verified:", data);
+                document.getElementById("debug").innerText = data["username"];
+            } else {
+                console.log("Session verification failed:", await response.text());
+                alert("Session is invalid");
+            }
+        } catch (error) {
+            console.error("Error verifying session:", error);
+        }
+    }
+</script>
+</html>

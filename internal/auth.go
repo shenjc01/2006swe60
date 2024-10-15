@@ -5,9 +5,12 @@ import (
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
+	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"io"
@@ -147,4 +150,69 @@ func getAESKey(clientID string) ([]byte, error) {
 	// Decode the hex format AES key to bytes
 	aesKey, err := hex.DecodeString(aesKeyHex)
 	return aesKey, err
+}
+
+func GetUser(w http.ResponseWriter, r *http.Request) {
+	// Retrieve the sessionID from the cookie
+	cookie, err := r.Cookie("loginID")
+	if err != nil {
+		fmt.Printf("No session cookie found")
+		return
+	}
+	sessionID := cookie.Value
+
+	// Query the database to validate the sessionID and retrieve the username
+	var username string
+	err = DB.QueryRow(`SELECT Username FROM LoggedIn WHERE LoginID = ?`, sessionID).Scan(&username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			fmt.Printf("invalid session")
+			return
+		}
+		fmt.Printf(`Error:%v`, err)
+		return
+	}
+	loginIDBytes := make([]byte, 16)
+	_, err = rand.Read(loginIDBytes)
+	if err != nil {
+		fmt.Printf("failed to generate login ID: %v", err)
+		return
+	}
+	loginID := hex.EncodeToString(loginIDBytes)
+
+	_, err = DB.Exec(`
+		INSERT INTO LoggedIn (Username, LoginID) 
+		VALUES (?, ?)
+		ON CONFLICT(username) DO UPDATE SET LoginID = ?`, username, loginID, loginID)
+	if err != nil {
+		fmt.Printf("Failed to insert session: %v", err)
+	}
+
+	cookie = &http.Cookie{
+		Name:     "loginID",
+		Value:    loginID,
+		Path:     "/",
+		HttpOnly: true,  // Protect from JavaScript access
+		Secure:   false, // Only send over HTTPS
+		MaxAge:   3600,  // Optional: set expiration in seconds (1 hour here)
+	}
+	http.SetCookie(w, cookie)
+	fmt.Println("Cookie Set")
+
+	type JSONResponse struct {
+		Message  string `json:"message"`
+		Username string `json:"username,omitempty"` // Omit if empty
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	err = json.NewEncoder(w).Encode(JSONResponse{
+		Message:  "Session valid",
+		Username: username,
+	})
+	if err != nil {
+		fmt.Printf("Failed to write response: %v", err)
+		return
+	}
+
 }
