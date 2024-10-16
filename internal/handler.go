@@ -75,3 +75,29 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
         "message": "User registered successfully!",
     })
 }
+
+func ProfileHandler(w http.ResponseWriter, r *http.Request) {
+	type UserProfile struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+	}
+	
+	// Get the username from the session
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, "Not signed in", http.StatusForbidden)
+		return
+	}
+	
+	// Retrieve user profile from the database
+	var userProfile UserProfile
+	err := DB.QueryRow(`SELECT username, email FROM Users WHERE username = ?`, username).Scan(&userProfile.Username, &userProfile.Email)
+	if err != nil {
+		http.Error(w, "Error retrieving user data", http.StatusInternalServerError)
+		log.Printf("Error retrieving user data: %v", err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(userProfile)
+}
