@@ -25,9 +25,10 @@ async function onSubmit(event){
             alert(result.message);
             window.location.href = '/login';
         } else {
-            document.getElementById("debug").innerText = result.message;
+            alert(result.message);
         }
     } else {
-        document.getElementById("debug").innerText = await response.text();
+        const result = await response.json();
+		alert(result.message);
     }
 }
