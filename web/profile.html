@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+    <p><strong>Username:</strong> <span id="username"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+
+    <script>
+        // Fetch profile data from the server
+        async function fetchProfile() {
+            let response = await fetch('/api/profile', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            });
+
+            if (response.ok) {
+                let data = await response.json();
+                // Display the profile data in the HTML
+                document.getElementById('username').innerText = data.username;
+                document.getElementById('email').innerText = data.email;
+            } else {
+                alert("You are not logged in.");
+				window.location.href = '/login';
+            }
+        }
+
+        // Fetch the profile data when the page loads
+        window.onload = fetchProfile;
+    </script>
+</body>
+</html>
