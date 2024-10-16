@@ -8,6 +8,9 @@ import (
 	"log"
 	"net/http"
 	"encoding/json"
+	"encoding/base64"
+	"crypto/aes"
+	"crypto/cipher"
 )
 
 // RegisterUser handles user registration requests
@@ -19,9 +22,11 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
 	
 	// Parse the JSON body
 	var req struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-		Email string `json:"email"`
+		SessionID  string `json:"sessionid"`
+		Username   string `json:"username"`
+		Ciphertext string `json:"ciphertext"`
+		IV         string `json:"iv"`
+		Email	   string `json:"email"`
 	}
 	
 	// Decode the JSON Body
@@ -36,9 +41,55 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
         })
 		return
 	}
+
+	// Base64 decode the ciphertext and IV
+	ciphertext, err := base64.StdEncoding.DecodeString(req.Ciphertext)
+	if err != nil {
+		http.Error(w, "Invalid base64 ciphertext", http.StatusBadRequest)
+		return
+	}
+
+	iv, err := base64.StdEncoding.DecodeString(req.IV)
+	if err != nil {
+		http.Error(w, "Invalid base64 IV", http.StatusBadRequest)
+		return
+	}
+
+	// Now you have the username, ciphertext (byte slice), and IV (byte slice)
+	fmt.Printf("SessionID: %s\n", req.SessionID)
+	fmt.Printf("Username: %s\n", req.Username)
+	fmt.Printf("Ciphertext: %x\n", ciphertext) // Print ciphertext in hex
+	fmt.Printf("IV: %x\n", iv)                 // Print IV in hex
+
+	key, err := getAESKey(req.SessionID)
+	if err != nil {
+		fmt.Printf("Failed to retrieve AES key. Error: %v\n", err)
+		return
+	}
+	// Step 1: Create a new AES cipher block
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		fmt.Printf("failed to create AES cipher: %v", err)
+		return
+	}
+
+	// Step 2: Create a GCM cipher mode (Galois/Counter Mode)
+	gcm, err := cipher.NewGCM(block)
+	if err != nil {
+		fmt.Printf("failed to create GCM mode: %v", err)
+		return
+	}
+
+	// Step 3: Decrypt the ciphertext using the GCM cipher and the IV
+	// gcm.Open expects the IV, ciphertext, and additional data (nil if not used)
+	plaintext, err := gcm.Open(nil, iv, ciphertext, nil)
+	if err != nil {
+		fmt.Printf("failed to decrypt: %v", err)
+		return
+	}
 	
 	username := req.Username
-	password := req.Password
+	password := string(plaintext)
 	email := req.Email
 
 	salt := make([]byte, 4)
