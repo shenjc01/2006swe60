@@ -8,7 +8,6 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -152,31 +151,31 @@ func getAESKey(clientID string) ([]byte, error) {
 	return aesKey, err
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	// Retrieve the sessionID from the cookie
+func GetUser(w http.ResponseWriter, r *http.Request) string {
+	// Retrieve the LoginID from the cookie
 	cookie, err := r.Cookie("loginID")
 	if err != nil {
 		fmt.Printf("No session cookie found")
-		return
+		return ""
 	}
-	sessionID := cookie.Value
+	LoginID := cookie.Value
 
-	// Query the database to validate the sessionID and retrieve the username
+	// Query the database to validate the LoginID and retrieve the username
 	var username string
-	err = DB.QueryRow(`SELECT Username FROM LoggedIn WHERE LoginID = ?`, sessionID).Scan(&username)
+	err = DB.QueryRow(`SELECT Username FROM LoggedIn WHERE LoginID = ?`, LoginID).Scan(&username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("invalid session")
-			return
+			return ""
 		}
 		fmt.Printf(`Error:%v`, err)
-		return
+		return ""
 	}
 	loginIDBytes := make([]byte, 16)
 	_, err = rand.Read(loginIDBytes)
 	if err != nil {
 		fmt.Printf("failed to generate login ID: %v", err)
-		return
+		return ""
 	}
 	loginID := hex.EncodeToString(loginIDBytes)
 
@@ -197,22 +196,6 @@ func GetUser(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   3600,  // Optional: set expiration in seconds (1 hour here)
 	}
 	http.SetCookie(w, cookie)
-	fmt.Println("Cookie Set")
-
-	type JSONResponse struct {
-		Message  string `json:"message"`
-		Username string `json:"username,omitempty"` // Omit if empty
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(JSONResponse{
-		Message:  "Session valid",
-		Username: username,
-	})
-	if err != nil {
-		fmt.Printf("Failed to write response: %v", err)
-		return
-	}
-
+	fmt.Println("Cookie Refreshed")
+	return username
 }

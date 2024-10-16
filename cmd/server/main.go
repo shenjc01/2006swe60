@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"test/internal"
@@ -47,6 +48,12 @@ func main() {
 		http.ServeFile(w, r, "./web/register.html")
 	})
 	http.HandleFunc("/bookmarks", func(w http.ResponseWriter, r *http.Request) {
+
+		username := internal.GetUser(w, r)
+		if username == "" {
+			http.Error(w, "Not signed in", 403)
+		}
+		fmt.Println(username)
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/BookmarksPage.html")
 	})
@@ -57,7 +64,6 @@ func main() {
 	http.HandleFunc("/getkey", internal.ServeClientPublicKey)
 	http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
 	http.HandleFunc("/loginattempt", internal.AttemptLogin)
-	http.HandleFunc("/getUser", internal.GetUser)
 	http.HandleFunc("/registerProcess", internal.RegisterUser)
 
 	// Start the server
