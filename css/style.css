@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Hind&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Hind&family=Montserrat:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 @import url(./partials/variables.css);
 
@@ -8,11 +8,11 @@
     position: fixed;
     top: 0;
     width:100%;
-    background-color: white;
+    background-color: var(--green-color);
     box-shadow: var(--box-shadow);
-    font-family: 'Hind', sans-serif;
+    font-family: var(--ro);
     font-size: 1rem;
-    color: var(--title-color);
+    color: var(--white-color);
     z-index: 999;
 }
 
@@ -37,7 +37,7 @@
 
 
 .header_area .main-menu .navbar .navbar-brand {
-    padding: 0 2rem 0 3.5rem;
+    padding: 0 2rem 0 0;
 }
 
 .header_area .main-menu .navbar {
@@ -45,64 +45,53 @@
 }
 
 .header_area .main-menu .nav-item .nav-link {
-    font-family: var(--hind);
+    font-family: var(--roboto);
     text-transform: uppercase;
-    padding: 1.5rem;
-}
-
-/*
-.header_area .main-menu .navbar-nav .active {
-    background: var(--primary-color);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -background-clip: text;
-}
-
-.header_area .main-menu .navbar-nav a:hover {
-    background: var(--gradient-color);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -background-clip: text;
-    transition: 0.4s;
-}
-*/
-
-.header_area .main-menu .navbar-nav .nav-link.active {
-    color: var(--primary-color);
-    text-decoration: none;
+    padding: 1rem 0 0 2rem;
 }
 
 .header_area .main-menu .navbar-nav .nav-link {
-    color: var(--border-color);
+    color: var(--white-color);
     text-decoration: none;
 }
 
 .header_area .main-menu .navbar-nav .nav-link:hover{
-    color: var(--secondary-color);
+    color: var(--olive-color);
+    font-weight: bold;
+}
+
+.header_area .main-menu .navbar-nav .nav-link:active {
+    color: var(--olive-color);
+    font-weight: bold;
 }
 
 /* end nav */
 
-/* start banner */
+/* start home */
+.site-main .site-banner {
+    background: url(/images/recycling\ kids.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-color: var(--white-color);
+    margin-bottom: 5%;
+    padding-bottom: 15%
+}
+
 .site-main .site-banner .site-title h1{
-    font-family: var(--montserrat);
-    color: var(--title-color);
-    padding-top: 40%;
-    font-weight: 500;
+    font-family: var(--poppins);
+    color: var(--brown-color);
+    padding-top: 30%;
+    font-weight: 800;
     font-size: 5rem;
 }
 
 .site-main .site-banner .site-title h4{
-    font-family: var(--montserrat);
-    font-weight: lighter;
-    color: var(--primary-color);
-    font-size: 1.9rem;
-}
-
-.site-main .site-banner .site-title p{
-    font-family: var(--hind);
-    color: var(--border-color);
-    padding: .4rem 0;
+    font-family: var(--roboto);
+    font-stretch: extra-condensed;
+    font-weight: 300;
+    padding: 1rem 0 1rem 0;
+    color: var(--brown-color);
+    font-size: 1.5rem;
 }
 
 .site-main .site-banner .banner-image >img {
@@ -112,59 +101,33 @@
     border-radius: 50%;
 }
 
-.button {
-    padding: 0.8rem 2.2rem;
-    font: normal 500 16px/ 20px var(--hind);
-    position: relative;
-    border: 3px solid transparent;
-    border-radius: 4px;
-}
-
 .primary-button {
-    margin-right: 10px;
-    background: var(--gradient-color);
+    padding: 0.8rem 2.2rem;
+    font: normal 500 16px/ 20px var(--poppins);
+    position: relative;
+    border-color: var(--green-color);
+    border-radius: 30px;
+    background: var(--green-color);
     background-clip: padding-box;
-    color: whitesmoke;
+    color: var(--white-color);
     transition: background .6s ease;
     box-shadow: var(--box-shadow);
 }
 
 .primary-button:hover {
-    background: whitesmoke;
+    background: var(--white-color);
     background-clip: padding-box;
-    color: var(--title-color);
+    border-color: var(--green-color);
+    border-radius: 30px;
+    color: var(--darkbrown-color);
 }
 
 .primary-button::after {
     position: absolute;
     top: -2px; left:-2px;
     bottom: -2px; right: -2px;
-    background: var(--gradient-color);
-    content: '';
-    z-index: -1;
-    border-radius: 4px;
-}
-
-.secondary-button {
-    margin-left: 10px;
-    background: var(--gradient-color);
-    background-clip: padding-box;
-    color: whitesmoke;
-    transition: background .6s ease;
-    box-shadow: var(--box-shadow);
-}
-
-.secondary-button:hover {
-    background: whitesmoke;
-    background-clip: padding-box;
-    color: var(--title-color);
-}
-
-.secondary-button::after {
-    position: absolute;
-    top: -2px; left:-2px;
-    bottom: -2px; right: -2px;
-    background: var(--gradient-color);
+    border-color: var(--green-color);
+    border-radius: 30px;
     content: '';
     z-index: -1;
     border-radius: 4px;
@@ -172,132 +135,113 @@
 /* end banner */
 
 /* start about */
-.site-main .about-area {
-    padding: 8rem 5rem 8rem 5rem;
+.site-main .about-us {
+    padding: 10% 0 20% 3.5%;
 }
 
-.about-area .about-image {
+.site-main .about-us .about-us-img {
     display: flex;
     justify-content: center;
-}
-.site-main .about-area .about-title > h2{
-    display:block;
-    font: normal bold 49px/60px var(--montserrat);
-    font-weight: lighter;
-    color: var(--title-color);
+    padding-left: 3%;
 }
 
-.site-main .about-area .about-title .paragraph > p{
-    font-family: var(--hind);
-    padding: .4rem 0;
-    color: var(--border-color);
+.site-main .about-us .about-us-text{
+    font-family: var(--roboto);
+    font-size: larger;
+    text-align: justify;
+    padding: 1rem 0;
+    color: var(--brown-color);
 }
 /* end about */
 
-/* start skills area */
-.site-main .skills-area {
-    padding: 5rem 2rem;
+/* start recycling area */
+.site-main .start-recycling-area {
+    padding: 3rem 0 8rem 0;
 }
 
-.skills-area .skills-title >h1 {
+.start-recycling-area .start-recycling-title >h1 {
     display: block;
     padding: 0;
-    font-size: 49px;
-    font-family: var(--montserrat);
-    font-weight: lighter;
-    color: var(--title-color);
+    font-size: 50px;
+    font-family: var(--poppins);
+    font-weight: bold;
+    color: var(--brown-color);
+    text-align: center;
 }
 
-.skills-area .skills .card-text >span {
-    font-family: var(--hind);
+.start-recycling-area .recyclable-items {
+    background-color: rgba(84, 85, 82, 0.6);
     padding: 0;
-    color: var(--border-color);
-}
-
-.skills-area .skills {
-    background-color: rgba(248, 252, 253, 0.973);
-    padding: 0;
-    width: 16rem;
+    width: 100%;
+    max-width: 16rem;
     height: 28rem;
-    margin: 3rem 0.5rem;
-    transition: box-shadow .7s ease;
+    margin: 3rem auto;
+    transition: all .3s ease;
+    box-sizing: border-box;
 }
 
-.skills-area .skills:hover{
-    box-shadow: var(--box-shadow);
+.start-recycling-area .recyclable-items:hover{
+    background-color: var(--brown-color);
 }
 
-.skills-area .card-title {
+.start-recycling-area .recyclable-items .recyclables-img {
+    padding: 3rem 0;
+    display: inline-block;
+    margin: 6rem 5rem 1rem 5rem;
+    transition: margin 0.3s ease;
+}
+
+.start-recycling-area .recyclable-items:hover .recyclables-img {
+    margin: 3rem 5rem 1rem 5rem;
+}
+
+.start-recycling-area .card-title {
     display: block;
     padding: 0;
-    font-family: var(--montserrat);
-    font-weight: lighter;
-    color: var(--title-color)
+    font-family: var(--poppins);
+    font-weight: bold;
+    color: var(--white-color);
+    text-align: center;
 }
 
-.skills-area .para {
-    font-family: var(--hind);
-    padding: 3rem;
-    color: var(--border-color);
-}
-/* end skills area */
-
-/* start project area */
-.site-main .project-area{
-    padding: 4rem 0;
+.start-recycling-area .recyclable-items .card-text{
+    font-family: var(--roboto);
+    text-align: center;
+    padding: 0.5rem;
+    opacity: 0; /* Initially hidden */
+    visibility: hidden; /* Initially hidden */
+    transition: opacity .3s ease, visibility .3s ease; /* Smooth transition */
 }
 
-.site-main .project-area .button-group button{
-    background: transparent;
-    border: none;
-    font: normal 500 16px/130px var(--hind);
-    color: var(--border-color);
-    text-transform: uppercase;
+.start-recycling-area .recyclable-items:hover .card-text {
+    opacity: 1; /* Show text on hover */
+    visibility: visible; /* Make text visible on hover */
 }
 
-.site-main .project-area .button-group button:hover{
-    color: var(--secondary-color);
-    transition: 0.3s;
+.start-recycling-area .recyclable-items .card-text >span{
+    color: var(--white-color)
+}
+/* end recycling area */
+
+/* start recycling tips area */
+.site-main .recycling-tips-area{
+    padding: 3rem 0;
 }
 
-.site-main .project-area .button-group button+button{
-    padding-left: 3rem;
+.site-main .recycling-tips-area .recycling-tips-header{
+    text-align: center;
 }
 
-.site-main .project-area .title-h1 {
+.site-main .recycling-tips-area .recycling-tips-header >h1{
+    font-family: var(--poppins);
+    color: var(--brown-color);
+    font-weight: bold;
     display: block;
-    padding: 0;
-    font-size: 49px;
-    font-family: var(--montserrat);
-    font-weight: lighter;
-    color: var(--title-color);
 }
 
-.site-main .project-area .grid .our-project >.title .linkout:hover{
-    color: var(--primary-color) !important;
-    text-decoration: none;
-}
-
-.site-main .project-area .grid .our-project >.title h4{
-    font: normal 700 25px/12px var(--montserrat);
-    color: var(--border-color);
-}
-
-.site-main .project-area .grid .our-project >.title span{
-    font-family: var(--hind);
-}
-
-.site-main .project-area .grid .our-project .img a:hover img{
-    filter:brightness(1.1) drop-shadow(1px 8px 30px #b1afaf);
-}
-
-button:focus,
-button:active
-button:hover
-.btn:active,
-.btn.active{
-    outline: 0px !important;
-    box-shadow: none !important;
+.site-main .recycling-tips-area .recycling-tips-content{
+    text-align: left;
+    padding: 0 7%
 }
 /* end project area */
 
