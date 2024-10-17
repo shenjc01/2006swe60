@@ -6,9 +6,10 @@ function storeTextileQuantity() {
         // Store the quantity in session storage
         sessionStorage.setItem("textileQuantity", quantity);
         return true; // Valid quantity
-    } else {
-        alert("Refash only accepts 10 items or more.");
-        return false; // Invalid quantity
+    } 
+    else
+    {
+        return false;
     }
 }
 
@@ -17,7 +18,11 @@ function selectMethod() {
     const isValidQuantity = storeTextileQuantity();
 
     if (isValidQuantity) {
-        document.getElementById('optionsContainer').classList.remove('hidden');
+        window.location.href="textile2.html";
+    }
+    else
+    {
+        window.location.href="mappage.html"
     }
 }
 
