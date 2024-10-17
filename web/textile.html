@@ -37,11 +37,25 @@
         .options-container {
             margin-top: 20px;
         }
+
+        /* Textile Guide button styling */
+        .Guide-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4E7A6A;
+            color: white;
+            cursor: pointer;
+            font-size: 24px;
+        }
     </style>
 </head>
 
 <body>
     <h1>Recycle Your Textile Waste</h1>
+
+    <!-- Textile Guide Button -->
+    <button class="Guide-button" onclick="openTextileGuide()">Textile Guide</button>
 
     <div class="quantity-container">
         <label for="textileQuantity">Enter the quantity of textile waste (minimum 10 items):</label>
@@ -61,7 +75,28 @@
         <p>Click the QR code to open Google Maps.</p>
     </div>
 
-    <script src="js/textile.js"></script>
+    <script>
+        function openTextileGuide() {
+            window.open('path/to/textile-guide.pdf'); // Add the actual path to your textile guide PDF or page
+        }
+
+        function selectMethod() {
+            const quantity = document.getElementById("textileQuantity").value;
+            if (quantity >= 10) {
+                document.getElementById("optionsContainer").classList.remove("hidden");
+            } else {
+                alert("Please enter at least 10 items.");
+            }
+        }
+
+        function selectDropOff() {
+            document.getElementById("qrCodeContainer").classList.remove("hidden");
+        }
+
+        function redirectToRefash() {
+            window.location.href = "https://refash.sg"; // Example redirection for the pick-up option
+        }
+    </script>
 </body>
 
 </html>
