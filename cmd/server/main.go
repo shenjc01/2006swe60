@@ -65,6 +65,10 @@ func main() {
 	http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
 	http.HandleFunc("/loginattempt", internal.AttemptLogin)
 	http.HandleFunc("/registerProcess", internal.RegisterUser)
+	http.HandleFunc("/getUser", internal.GetUsername)
+	http.HandleFunc("/logout", internal.Logout)
+	http.HandleFunc("/getComments", internal.GetComments)
+	http.HandleFunc("/getBookmarks", internal.GetBookmarks)
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")

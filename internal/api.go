@@ -254,3 +254,102 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	// Respond with a success message
 	w.Write([]byte("Data received successfully"))
 }
+
+func GetUsername(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		return
+	}
+	json.NewEncoder(w).Encode(username)
+}
+
+func GetComments(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		return
+	}
+	type Comment struct {
+		Date     string `json:"date"`
+		Location string `json:"location"`
+		Comment  string `json:"comment"`
+	}
+	rows, err := DB.Query(`
+        SELECT c.Date, l.Name AS Location, c.Comment
+        FROM Comments c
+        JOIN Locations l ON c.Latitude = l.Latitude AND c.Longitude = l.Longitude
+        WHERE c.Username = ?`, username)
+	if err != nil {
+		fmt.Printf("Failed to retrieve data: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	var found = false
+	var comments []Comment
+	for rows.Next() {
+		var comment Comment
+		if err := rows.Scan(&comment.Date, &comment.Location, &comment.Comment); err != nil {
+			return
+		}
+		comments = append(comments, comment)
+		found = true
+	}
+
+	if err = rows.Err(); err != nil {
+		fmt.Printf("Failed to parse data: %v", err)
+		return
+	}
+	if !found {
+		json.NewEncoder(w).Encode("You haven't commented!")
+		return
+	}
+	json.NewEncoder(w).Encode(comments)
+}
+
+func GetBookmarks(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		return
+	}
+	type Bookmark struct {
+		Name    string `json:"name"`
+		Address string `json:"address"`
+	}
+	rows, err := DB.Query(`
+        SELECT l.Name AS Name, l.Address AS Address
+        FROM Bookmarks b
+        JOIN Locations l ON b.Latitude = l.Latitude AND b.Longitude = l.Longitude
+        WHERE b.Username = ?`, username)
+	if err != nil {
+		fmt.Printf("Failed to retrieve data: %v", err)
+		return
+	}
+	defer rows.Close()
+
+	var found = false
+	var bookmarks []Bookmark
+	for rows.Next() {
+		var bookmark Bookmark
+		if err := rows.Scan(&bookmark.Name, &bookmark.Address); err != nil {
+			return
+		}
+		bookmarks = append(bookmarks, bookmark)
+		found = true
+	}
+
+	if err = rows.Err(); err != nil {
+		fmt.Printf("Failed to parse data: %v", err)
+		return
+	}
+	if !found {
+		json.NewEncoder(w).Encode("You have no bookmarks")
+		return
+	}
+	json.NewEncoder(w).Encode(bookmarks)
+}

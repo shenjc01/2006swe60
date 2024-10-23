@@ -199,3 +199,20 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 	fmt.Println("Cookie Refreshed")
 	return username
 }
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+	// Retrieve the LoginID from the cookie
+	cookie, err := r.Cookie("loginID")
+	if err != nil {
+		fmt.Printf("No session cookie found")
+		return
+	}
+	LoginID := cookie.Value
+
+	// Delete the logged in entry
+	_, err = DB.Exec(`DELETE FROM LoggedIn WHERE LoginID = ?`, LoginID)
+	if err != nil {
+		fmt.Printf(`Error:%v`, err)
+		return
+	}
+}
