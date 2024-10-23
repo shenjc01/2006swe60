@@ -69,6 +69,7 @@ func main() {
 	http.HandleFunc("/logout", internal.Logout)
 	http.HandleFunc("/getComments", internal.GetComments)
 	http.HandleFunc("/getBookmarks", internal.GetBookmarks)
+	http.HandleFunc("/AddBookmark", internal.AddBookmark)
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")

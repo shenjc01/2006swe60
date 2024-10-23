@@ -10,7 +10,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
+	"io"
 	"net/http"
 )
 
@@ -352,4 +354,55 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	json.NewEncoder(w).Encode(bookmarks)
+}
+
+func AddBookmark(w http.ResponseWriter, r *http.Request) {
+	// Ensure the request method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Read the body of the request
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+		return
+	}
+	type Coordinates struct {
+		Lat  string `json:"lat"`
+		Long string `json:"long"`
+	}
+	// Parse the JSON payload into the Coordinates struct
+	var coords Coordinates
+	err = json.Unmarshal(body, &coords)
+	if err != nil {
+		http.Error(w, "Error parsing JSON", http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+		return
+	}
+	// Check if the category is provided
+	if coords.Lat == "" || coords.Long == "" {
+		http.Error(w, "Coordinate parameters required", http.StatusBadRequest)
+		return
+	}
+	_, err = DB.Exec(`
+        INSERT INTO Bookmarks (Username, Latitude, Longitude)
+        VALUES (?, ?, ?)`, username, coords.Lat, coords.Long)
+
+	if err != nil {
+		var sqliteErr sqlite3.Error
+		if errors.As(err, &sqliteErr) && errors.Is(sqliteErr.ExtendedCode, sqlite3.ErrConstraintUnique) {
+			fmt.Printf("bookmark already exists for username: %s", username)
+			return
+		}
+		fmt.Printf("failed to insert bookmark: %w", err)
+		return
+	}
+	return
 }
