@@ -14,6 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"io"
 	"net/http"
+	"time"
 )
 
 // Location struct to represent data from the SQLite table
@@ -401,6 +402,41 @@ func AddBookmark(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("bookmark already exists for username: %s", username)
 			return
 		}
+		fmt.Printf("failed to insert bookmark: %w", err)
+		return
+	}
+	return
+}
+
+func AddComment(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+	}
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Error reading request body", http.StatusInternalServerError)
+	}
+	type Comment struct {
+		Lat     string `json:"lat"`
+		Long    string `json:"long"`
+		Comment string `json:"comment"`
+	}
+	var comment Comment
+	err = json.Unmarshal(body, &comment)
+	if err != nil {
+		http.Error(w, "Error parsing JSON", http.StatusBadRequest)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	username := GetUser(w, r)
+	if username == "" {
+		http.Error(w, `Not Logged In`, http.StatusBadRequest)
+	}
+	var date = time.Now().Format("2006-01-02")
+	_, err = DB.Exec(`
+        INSERT INTO Comments (Username, Latitude, Longitude, Comment, Date)
+        VALUES (?, ?, ?, ?, ?)`, username, comment.Lat, comment.Long, comment.Comment, date)
+
+	if err != nil {
 		fmt.Printf("failed to insert bookmark: %w", err)
 		return
 	}

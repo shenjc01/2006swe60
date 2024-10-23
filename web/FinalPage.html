@@ -8,6 +8,9 @@
     <p id="debug"> THIS PAGE LOADED, TRUST</p>
     <img id="qr" alt="QR Code" src="">
     <button onclick="addBookmark()"> Add Bookmark </button>
+
+    <input type="text" id="commentBox" placeholder="Add comment">
+    <button onclick="addComment()"> Add Comment </button>
     <div id="commentbar">
         <h2>Comments</h2>
     </div>
@@ -68,6 +71,24 @@
       };
 
       await fetch('/AddBookmark', {
+          method: 'POST', // Method type
+          headers: {
+              'Content-Type': 'application/json', // Specifying the content type as JSON
+          },
+          body: JSON.stringify(data), // Converting the data to JSON format
+      });
+  }
+  async function addComment(){
+      const lat = sessionStorage.getItem("lat");
+      const long = sessionStorage.getItem("long");
+      const comment = document.getElementById("commentBox").value;
+      document.getElementById("commentBox").value = "";
+      const data = {
+          lat: lat,  // example latitude
+          long: long, // example longitude
+          comment: comment
+      };
+      await fetch('/addComment', {
           method: 'POST', // Method type
           headers: {
               'Content-Type': 'application/json', // Specifying the content type as JSON
