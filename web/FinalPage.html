@@ -30,12 +30,19 @@
           if (!response.ok) throw new Error(`${uri}`)
           // Await the parsing of both JSON responses
           let commentjson = await response.json();
-          let comments = commentjson.sort(commentByDateComparator).map(
-              comment => `[${comment["Username"]}]: ${comment["Comment"]}`
-          )
-          for(let i=0;i<comments.length;i++){
+          if(commentjson!==null){
+              let comments = commentjson.sort(commentByDateComparator).map(
+                  comment => `[${comment["Username"]}]: ${comment["Comment"]}`
+              )
+              for(let i=0;i<comments.length;i++){
+                  const comment = document.createElement("p");
+                  comment.innerText = comments[i];
+                  document.getElementById("commentbar").appendChild(comment);
+              }
+          }
+          else {
               const comment = document.createElement("p");
-              comment.innerText = comments[i];
+              comment.innerText = "No comments yet!"
               document.getElementById("commentbar").appendChild(comment);
           }
       } catch (error) {
