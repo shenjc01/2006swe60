@@ -57,10 +57,15 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/BookmarksPage.html")
 	})
+	http.HandleFunc("/profile", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/profile.html")
+	})
 
 	// Set up API endpoint for data
 	http.HandleFunc("/api/location", internal.GetLocation) // GET requests for location
 	http.HandleFunc("/api/locationcomment/", internal.GetLocationComment)
+	http.HandleFunc("/api/profile", internal.ProfileHandler)
 	http.HandleFunc("/getkey", internal.ServeClientPublicKey)
 	http.HandleFunc("/sendkey", internal.DecryptClientAESKey)
 	http.HandleFunc("/loginattempt", internal.AttemptLogin)
