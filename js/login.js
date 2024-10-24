@@ -21,9 +21,8 @@ async function onSubmit(){
         body: JSON.stringify(payload) // Convert payload to JSON
     });
     if (response.ok) {
-        document.getElementById("debug").innerText = "Data sent successfully";
+        document.getElementById("debug").innerText = "Logged in!";
     } else {
         document.getElementById("debug").innerText = await response.text();
     }
-    document.getElementById("debug").innerText = await response.text();
 }
