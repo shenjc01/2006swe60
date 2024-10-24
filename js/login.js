@@ -25,4 +25,5 @@ async function onSubmit(){
     } else {
         document.getElementById("debug").innerText = await response.text();
     }
+    document.getElementById("debug").innerText = await response.text();
 }

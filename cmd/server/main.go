@@ -1,11 +1,45 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 	"test/internal"
+	"time"
 )
+
+func cleanUpExpiredSessions(db *sql.DB) {
+	// 30 minutes in seconds
+	expiryTime := int64(30 * 60)
+
+	// SQL query to delete sessions older than 30 minutes based on Unix timestamp
+	query := `DELETE FROM LoggedIn WHERE Timestamp < (strftime('%s', 'now') - ?)`
+
+	// Execute the query, passing expiryTime as the parameter
+	result, err := db.Exec(query, expiryTime)
+	if err != nil {
+		log.Printf("Error cleaning up expired sessions: %v", err)
+		return
+	}
+
+	query = `DELETE FROM SessionKeys WHERE Timestamp < (strftime('%s', 'now') - ?)`
+
+	// Execute the query, passing expiryTime as the parameter
+	result, err = db.Exec(query, expiryTime)
+	if err != nil {
+		log.Printf("Error cleaning up expired sessions: %v", err)
+		return
+	}
+
+	// Check how many rows were affected (optional)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Printf("Error fetching affected rows: %v", err)
+		return
+	}
+	log.Printf("Expired sessions cleaned up. Rows affected: %d\n", rowsAffected)
+}
 
 func main() {
 	internal.InitDB()
@@ -80,5 +114,17 @@ func main() {
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println(http.ListenAndServe(":8080", nil))
+	ticker := time.NewTicker(10 * time.Minute)
+	defer ticker.Stop()
+
+	// Run cleanup immediately on startup
+	go cleanUpExpiredSessions(internal.DB)
+
+	// Periodically run cleanup function on every tick
+	go func() {
+		for range ticker.C {
+			cleanUpExpiredSessions(internal.DB)
+		}
+	}()
 } // Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.

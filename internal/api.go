@@ -208,10 +208,13 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	err = DB.QueryRow(query, username).Scan(&hashedPassword)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			fmt.Printf("username %s not found", username) // Username doesn't exist
+			fmt.Printf("username %s not found", username)
+			http.Error(w, "Username not found", http.StatusBadRequest)
+			// Username doesn't exist
 			return
 		}
 		fmt.Println(err) // Some other error occurred
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	fmt.Printf("Hashed Password Retrieved: %s\n", hashedPassword)
@@ -222,20 +225,24 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			fmt.Printf("username %s not found", username) // Username doesn't exist
+			http.Error(w, "Username not found", http.StatusBadRequest)
 			return
 		}
 		fmt.Println(err) // Some other error occurred
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	fmt.Printf("Hashed Password Retrieved: %s\n", hashedPassword)
 	hashedPasswordBytes, err := hex.DecodeString(hashedPassword)
 	if err != nil {
 		fmt.Printf("failed to decode hex string of password: %v", err)
+		http.Error(w, "failed to decode hex string of password", http.StatusInternalServerError)
 		return
 	}
 	saltBytes, err := hex.DecodeString(salt)
 	if err != nil {
 		fmt.Printf("failed to decode hex string of salt: %v", err)
+		http.Error(w, "failed to decode hex string of salt", http.StatusInternalServerError)
 		return
 	}
 	err = bcrypt.CompareHashAndPassword(hashedPasswordBytes, append(saltBytes, password...))
@@ -249,6 +256,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	_, err = rand.Read(loginIDBytes)
 	if err != nil {
 		fmt.Printf("failed to generate login ID: %v", err)
+		http.Error(w, "failed to generate login ID", http.StatusInternalServerError)
 		return
 	}
 	loginID := hex.EncodeToString(loginIDBytes)
@@ -262,6 +270,7 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 		username, loginID, timestamp, loginID, timestamp)
 	if err != nil {
 		fmt.Printf("Failed to insert or update session: %v", err)
+		http.Error(w, "Failed to insert or update session", http.StatusInternalServerError)
 	}
 
 	cookie := &http.Cookie{
