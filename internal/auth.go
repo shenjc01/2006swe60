@@ -8,12 +8,14 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"io"
 	"net/http"
+	"time"
 )
 
 func generateClientKey(sessionID string) error {
@@ -36,10 +38,10 @@ func generateClientKey(sessionID string) error {
 		Type:  "PUBLIC KEY",
 		Bytes: spkiBytes,
 	})
-
+	timestamp := time.Now().Unix()
 	// Store keys in the database
-	_, err = DB.Exec("INSERT INTO SessionKeys (sessionID, privateKey, publicKey) VALUES (?, ?, ?)",
-		sessionID, privateKeyPEM, publicKeyPEM)
+	_, err = DB.Exec("INSERT INTO SessionKeys (sessionID, privateKey, publicKey,timestamp) VALUES (?, ?, ?, ?)",
+		sessionID, privateKeyPEM, publicKeyPEM, timestamp)
 	return err
 }
 
@@ -62,7 +64,11 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/x-pem-file")
-	w.Write([]byte(publicKey))
+	_, err = w.Write([]byte(publicKey))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	fmt.Printf("%x", publicKey)
 }
 
@@ -70,7 +76,6 @@ func ServeClientPublicKey(w http.ResponseWriter, r *http.Request) {
 func storeAESKey(clientID string, aesKey []byte) error {
 	// Store the AES key in hex format
 	aesKeyHex := hex.EncodeToString(aesKey)
-
 	_, err := DB.Exec("UPDATE SessionKeys SET aesKey = (?) WHERE sessionID = (?)", aesKeyHex, clientID)
 	return err
 }
@@ -134,7 +139,11 @@ func DecryptClientAESKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "AES key stored successfully for client: %s", clientID)
+	_, err = fmt.Fprintf(w, "AES key stored successfully for client: %s", clientID)
+	if err != nil {
+		http.Error(w, "Failed to write response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Retrieve the AES key for a client
@@ -179,12 +188,15 @@ func GetUser(w http.ResponseWriter, r *http.Request) string {
 	}
 	loginID := hex.EncodeToString(loginIDBytes)
 
+	timestamp := time.Now().Unix()
 	_, err = DB.Exec(`
-		INSERT INTO LoggedIn (Username, LoginID) 
-		VALUES (?, ?)
-		ON CONFLICT(username) DO UPDATE SET LoginID = ?`, username, loginID, loginID)
+		INSERT INTO LoggedIn (Username, LoginID, timestamp) 
+		VALUES (?, ?, ?)
+		ON CONFLICT(Username) DO UPDATE 
+		SET LoginID = ?, timestamp = ?`,
+		username, loginID, timestamp, loginID, timestamp)
 	if err != nil {
-		fmt.Printf("Failed to insert session: %v", err)
+		fmt.Printf("Failed to insert or update session: %v", err)
 	}
 
 	cookie = &http.Cookie{
@@ -213,6 +225,25 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 	_, err = DB.Exec(`DELETE FROM LoggedIn WHERE LoginID = ?`, LoginID)
 	if err != nil {
 		fmt.Printf(`Error:%v`, err)
+		return
+	}
+}
+func CheckRSAValidity(w http.ResponseWriter, r *http.Request) {
+	body := r.URL.Query().Get("key")
+	if body == "" {
+		http.Error(w, "Requires Key as Parameter", http.StatusBadRequest)
+		return
+	}
+	var exists = false
+	query := `SELECT EXISTS(SELECT 1 FROM SessionKeys WHERE SessionKeys.publicKey = ?)`
+	err := DB.QueryRow(query, body).Scan(&exists)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, "Failed to check RSA key", http.StatusInternalServerError)
+		return
+	}
+	err = json.NewEncoder(w).Encode(exists)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 }

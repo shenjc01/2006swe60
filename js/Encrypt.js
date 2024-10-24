@@ -73,6 +73,7 @@ async function startup(){
     let response = await fetch(uri);
     const pemKey = await response.text();
     console.log(`Successful Fetch\nKey: ${_arrayBufferToBase64(pemKey)}`);
+    sessionStorage.setItem("pubkey",pemKey);
     const rsaPublicKey = await importRSAPublicKey(pemKey).
     catch(err=>console.log(err));
     if(!rsaPublicKey) return null;
@@ -109,6 +110,17 @@ async function startup(){
 
 async function encrypt(aesKey, plaintext){
     console.log("Password encryption attempted");
+    const params = new URLSearchParams({
+        key: sessionStorage.getItem("pubkey")
+    }).toString();
+    let response = await fetch(`/checkRSA?${params.toString()}`).catch(
+        err=>document.getElementById("debug").innerText = err
+    )
+    const check = await response.text().catch(
+        err=>document.getElementById("debug").innerText = err
+    )
+    if(check==="false") aesKey = await startup();
+
     let iv =  crypto.getRandomValues(new Uint8Array(12)); // Generate a unique IV
     const encoder = new TextEncoder();
     const encodedPlaintext = encoder.encode(plaintext); // Convert the plaintext to a Uint8Array

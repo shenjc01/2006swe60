@@ -59,7 +59,12 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}(rows)
 
 	// Create a slice to hold the results
 	var locations []Location
@@ -73,7 +78,11 @@ func GetLocation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the results as JSON
-	json.NewEncoder(w).Encode(locations)
+	err = json.NewEncoder(w).Encode(locations)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetLocationComment(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +107,12 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}(rows)
 
 	// Create a slice to hold the results
 	var comments []Comment
@@ -112,7 +126,11 @@ func GetLocationComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the results as JSON
-	json.NewEncoder(w).Encode(comments)
+	err = json.NewEncoder(w).Encode(comments)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func AttemptLogin(w http.ResponseWriter, r *http.Request) {
@@ -235,12 +253,15 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	loginID := hex.EncodeToString(loginIDBytes)
 
+	timestamp := time.Now().Unix()
 	_, err = DB.Exec(`
-		INSERT INTO LoggedIn (Username, LoginID) 
-		VALUES (?, ?)
-		ON CONFLICT(username) DO UPDATE SET LoginID = ?`, username, loginID, loginID)
+		INSERT INTO LoggedIn (Username, LoginID, timestamp) 
+		VALUES (?, ?, ?)
+		ON CONFLICT(Username) DO UPDATE 
+		SET LoginID = ?, timestamp = ?`,
+		username, loginID, timestamp, loginID, timestamp)
 	if err != nil {
-		fmt.Printf("Failed to insert session: %v", err)
+		fmt.Printf("Failed to insert or update session: %v", err)
 	}
 
 	cookie := &http.Cookie{
@@ -255,7 +276,11 @@ func AttemptLogin(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Cookie Set")
 
 	// Respond with a success message
-	w.Write([]byte("Data received successfully"))
+	_, err = w.Write([]byte("Data received successfully"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetUsername(w http.ResponseWriter, r *http.Request) {
@@ -265,7 +290,11 @@ func GetUsername(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, `Not Logged In`, http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(w).Encode(username)
+	err := json.NewEncoder(w).Encode(username)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetComments(w http.ResponseWriter, r *http.Request) {
@@ -289,7 +318,12 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve data: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}(rows)
 
 	var found = false
 	var comments []Comment
@@ -307,10 +341,18 @@ func GetComments(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !found {
-		json.NewEncoder(w).Encode("You haven't commented!")
+		err := json.NewEncoder(w).Encode("You haven't commented!")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 		return
 	}
-	json.NewEncoder(w).Encode(comments)
+	err = json.NewEncoder(w).Encode(comments)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func GetBookmarks(w http.ResponseWriter, r *http.Request) {
@@ -333,7 +375,12 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("Failed to retrieve data: %v", err)
 		return
 	}
-	defer rows.Close()
+	defer func(rows *sql.Rows) {
+		err := rows.Close()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}(rows)
 
 	var found = false
 	var bookmarks []Bookmark
@@ -351,10 +398,16 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if !found {
-		json.NewEncoder(w).Encode("You have no bookmarks")
+		err := json.NewEncoder(w).Encode("You have no bookmarks")
+		if err != nil {
+			return
+		}
 		return
 	}
-	json.NewEncoder(w).Encode(bookmarks)
+	err = json.NewEncoder(w).Encode(bookmarks)
+	if err != nil {
+		return
+	}
 }
 
 func AddBookmark(w http.ResponseWriter, r *http.Request) {

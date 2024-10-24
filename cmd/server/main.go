@@ -76,6 +76,7 @@ func main() {
 	http.HandleFunc("/getBookmarks", internal.GetBookmarks)
 	http.HandleFunc("/AddBookmark", internal.AddBookmark)
 	http.HandleFunc("/addComment", internal.AddComment)
+	http.HandleFunc("/checkRSA", internal.CheckRSAValidity)
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")

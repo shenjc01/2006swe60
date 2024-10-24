@@ -6,7 +6,7 @@ async function onSubmit(){
     const aesKey = await startup();
     console.log("Completed handshake");
     const sessionID = sessionStorage.getItem("sessionID");
-    const {ciphertext, iv} = await encrypt(aesKey, password);
+    const {ciphertext, iv} = await encrypt(aesKey, password)
     document.getElementById("debug").innerText = `Encrypted Password = ${ciphertext}`;
     // Convert ciphertext and iv to base64 strings for transport
     const payload = {
