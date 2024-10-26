@@ -1,4 +1,4 @@
-function storerecyclingtype() {
+function storecategories() {
     const selectedcategories = []; 
 
     
@@ -24,8 +24,7 @@ function storerecyclingtype() {
 }
 
 function nextpage() {
-    storerecyclingtype();
-    window.location.href = `${window.location.href.slice(0, location.href.lastIndexOf("/"))}/map`
+    storecategories();
     const selectedCategories = JSON.parse(sessionStorage.getItem("SelectedCategories"));
     console.log("Selected Categories:", selectedCategories); 
 }

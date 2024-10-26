@@ -1,0 +1,95 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+body {background-color: #F7FFED;}
+
+h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 75px;
+    color: #181818;
+    opacity: 0.8;
+  }
+
+.container {
+    display: flex;               
+    height: 150vh;                
+    padding-left: 5%;             
+    padding-right: 5%;                 
+    align-items: center;          
+}
+
+
+/* Sidebar styling */
+#sidebar {
+    display: flex;  
+    flex-direction: column;  
+    width: 370px;                          
+    background-color: #F7FFED;  
+    height: 60%;
+    padding: 15px;              
+    overflow-y: auto;           
+    border: 4px solid #ccc;      
+    box-sizing: border-box;                     
+}
+
+/* Input and button container */
+#input-container {
+    display: flex;                
+    background-color: #4E7A6A;  
+    width: 100%;
+    height: 50px;
+    border-radius: 4px;          
+    padding: 5px;               
+    margin-bottom: 10px; 
+    margin-left: -6.7px;
+
+}
+
+
+input {
+    flex: 1;                                   
+    border: none;     
+    background-color: transparent; 
+    color: white;           
+    border-radius: 0px;    
+    padding: 8px;                   
+   
+}
+
+
+ button {
+    flex-basis: 10%;              
+    background-color: transparent; 
+    border: none;                
+    color: white;  
+    font-weight: bold;             
+    cursor: pointer;                            
+}
+
+
+button:hover {
+    opacity: 0.7;               
+}
+
+#userInput::placeholder {
+    font-weight: bold; 
+    color: #F7FFED;  
+}   
+
+/* Map container styling */
+#map-container {
+    display: flex;  
+    flex-basis: 75%;              
+    height: 60%;                                
+    justify-content: center;     
+    align-items: center;          
+    box-sizing: border-box;       
+
+}
+#map {
+    width: 100%;                 
+    height: 100%;                
+    object-fit: cover;            
+    border: 2px solid white;       
+}
+
