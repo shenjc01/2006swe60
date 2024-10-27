@@ -48,6 +48,10 @@ func main() {
 	http.Handle("/images/", http.StripPrefix("/images/", imagefileServer))
 	jsfileServer := http.FileServer(http.Dir("./js"))
 	http.Handle("/js/", http.StripPrefix("/js/", jsfileServer))
+	cssfileServer := http.FileServer(http.Dir("./css"))
+	http.Handle("/css/", http.StripPrefix("/css/", cssfileServer))
+	guidefileServer := http.FileServer(http.Dir("./guides"))
+	http.Handle("/guides/", http.StripPrefix("/guides/", guidefileServer))
 	// Serve HTML file (main page)
 	http.HandleFunc("/map", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
