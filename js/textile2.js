@@ -13,7 +13,7 @@ function nextpage()
     {
         sessionStorage.setItem("textile","refashdropoff");
     
-        window.location.href="mappage.html";
+        window.location.href="/map";
     }
     if (pickupSelected)
     {
