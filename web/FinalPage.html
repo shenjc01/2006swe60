@@ -3,17 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="/css/finalpage.css">
 </head>
 <body onload="getLocationCommentAsync()">
+    <h1>Scan the QR Code below</h1>
     <p id="debug"> THIS PAGE LOADED, TRUST</p>
     <img id="qr" alt="QR Code" src="">
-    <button onclick="addBookmark()"> Add Bookmark </button>
-
-    <input type="text" id="commentBox" placeholder="Add comment">
-    <button onclick="addComment()"> Add Comment </button>
     <div id="commentbar">
-        <h2>Comments</h2>
+        <h2>Comments: </h2>
+        <h3>Please add your comments: </h3>
+        <div id="existing-comments">
+            <textarea name="" id="new-comment" cols="80" rows="8"></textarea>
+            <br>
+            <button id="postcomment">Post</button>
+        </div>
     </div>
+
+    <h3>Your comments: </h3>
+    <div id="comment-container"></div>
+
+    
+
+
 </body>
 <script>
   const gMapUriBuilder = (lat, long) => `https://www.google.com/maps/place/${lat}+${long}`;
@@ -33,20 +44,14 @@
           // Check if both responses are okay
           if (!response.ok) throw new Error(`${uri}`)
           // Await the parsing of both JSON responses
-          let commentjson = await response.json();
-          if(commentjson!==null){
-              let comments = commentjson.sort(commentByDateComparator).map(
-                  comment => `[${comment["Username"]}]: ${comment["Comment"]}`
-              )
-              for(let i=0;i<comments.length;i++){
-                  const comment = document.createElement("p");
-                  comment.innerText = comments[i];
-                  document.getElementById("commentbar").appendChild(comment);
-              }
-          }
-          else {
+          let commentjson;
+          commentjson = await response.json();
+          let comments = commentjson.sort(commentByDateComparator).map(
+              comment => `[${comment["Username"]}]: ${comment["Comment"]}`
+          )
+          for(let i=0;i<comments.length;i++){
               const comment = document.createElement("p");
-              comment.innerText = "No comments yet!"
+              comment.innerText = comments[i];
               document.getElementById("commentbar").appendChild(comment);
           }
       } catch (error) {
@@ -58,43 +63,21 @@
   function regenerateQR(){
       const lat = sessionStorage.getItem("lat");
       const long = sessionStorage.getItem("long");
-      sessionStorage.setItem("lat",lat);
-      sessionStorage.setItem("long",long);
       document.getElementById("qr").src = QRCodeBuilder(gMapUriBuilder(lat, long));
   }
-  async function addBookmark() {
-      const lat = sessionStorage.getItem("lat");
-      const long = sessionStorage.getItem("long");
-      const data = {
-          lat: lat,  // example latitude
-          long: long // example longitude
-      };
 
-      await fetch('/AddBookmark', {
-          method: 'POST', // Method type
-          headers: {
-              'Content-Type': 'application/json', // Specifying the content type as JSON
-          },
-          body: JSON.stringify(data), // Converting the data to JSON format
-      });
+
+  document.getElementById("postcomment").addEventListener("click", newcomment);
+  function newcomment()
+  {
+    const newComment = document.getElementById("new-comment").value;
+    const commentContainer = document.getElementById("comment-container");
+    const commentElement = document.createElement("p");
+    commentElement.innerText = newComment;
+    commentContainer.appendChild(commentElement);
+    document.getElementById("new-comment").value = "";
   }
-  async function addComment(){
-      const lat = sessionStorage.getItem("lat");
-      const long = sessionStorage.getItem("long");
-      const comment = document.getElementById("commentBox").value;
-      document.getElementById("commentBox").value = "";
-      const data = {
-          lat: lat,  // example latitude
-          long: long, // example longitude
-          comment: comment
-      };
-      await fetch('/addComment', {
-          method: 'POST', // Method type
-          headers: {
-              'Content-Type': 'application/json', // Specifying the content type as JSON
-          },
-          body: JSON.stringify(data), // Converting the data to JSON format
-      });
-  }
+
+
 </script>
 </html>

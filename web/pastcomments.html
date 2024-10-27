@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recylo</title>
+    <link rel="stylesheet" href="pastcomments.css">
+</head>
+<body>
+    <h1>See your past comments</h1>
+    <div class="container">
+        <div id="comments"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const commentsContainer = document.getElementById('comments');
+
+            fetch('https://dummyjson.com/comments') // replace with the actual database -> dummy api for now
+                .then(res => res.json())
+                .then(data => {
+                    commentsContainer.innerHTML = ''; 
+                    data.comments.forEach(comment => {
+                        const commentdiv = document.createElement('div');
+                        commentdiv.className = 'eachcomment';  
+
+                        const username = document.createElement('div');
+                        username.className = 'username';
+                        username.textContent = comment.user.username;
+
+                        const text = document.createElement('div');
+                        text.className = 'text';
+                        text.textContent = comment.body;
+
+                        commentdiv.append(username,text);
+                        commentsContainer.appendChild(commentdiv);
+                    });
+                })
+                
+        });
+    </script>
+</body>
+</html>

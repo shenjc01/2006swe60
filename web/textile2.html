@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recyclo</title>
+    <link rel="stylesheet" href="/css/textile2.css">
+    
+   
+</head>
+<body>
+
+<h1 style="text-align: center;">Choose How You'd Like To Recycle Your Clothes With Refash</h1>
+
+<button class="recycling-guide" onclick="Guide()">Recycling Guide</button>
+<button class="proceed-button" onclick="nextpage()">Proceed</button>
+
+<div class="categories">
+    <div class="column">
+        <div class="image-container">
+            <img src="images/bottles.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="pickup">Pick Up</label>
+            <input type="radio" id="pickup" name="item1" value="pickup">
+        </div>
+    </div>
+    
+    <div class="column">
+        <div class="image-container">
+            <img src="images/cans.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="dropoff">Drop Off</label>
+            <input type="radio" id="dropoff" name="item1" value="dropoff">
+        </div>
+    </div>
+
+
+
+</div>
+
+<script src="js/textile2.js"></script>
+
+</body>
+</html>

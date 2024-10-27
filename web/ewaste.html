@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recyclo</title>
+    <link rel="stylesheet" href="/css/ewaste.css">
+
+</head>
+
+
+<body>
+<h1 style="text-align: center;">Select the items you want to recycle</h1>
+
+<button class="recycling-guide" onclick="Guide()">Recycling Guide</button>
+<button class="proceed-button" onclick="nextpage()">Proceed</button>
+
+<div class="categories">
+    
+    <div class="column">
+        <div class="image-container">
+            <img src="images/cans.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="ICT equipment">ICT equipment</label>
+            <input type="checkbox" id="ICT equipment" name="item1" value="ICT equipment">
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="image-container">
+            <img src="images/glass.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="Batteries">Batteries</label>
+            <input type="checkbox" id="Batteries" name="item2" value="Batteries">
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="image-container">
+            <img src="images/paper.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="Lamps">Lamps</label>
+            <input type="checkbox" id="Lamps" name="item3" value="Lamps">
+        </div>
+    </div>
+</div>
+
+
+<div class="categories second-row">
+    <div class="column">
+        <div class="image-container">
+            <img src="images/plasticbag.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="ConsumerProducts">Consumer Products</label>
+            <input type="checkbox" id="ConsumerProducts" name="item4" value="ConsumerProducts">
+        </div>
+    </div>
+
+    <div class="column">
+        <div class="image-container">
+            <img src="images/others.png">
+            <div class="hover-overlay"></div>
+            <span class="hover-text">Sample Text</span>
+        </div>
+        <div class="category-container">
+            <label for="others">Others</label>
+            <input type="checkbox" id="others" name="item5" value="Others">
+        </div>
+    </div>
+</div>
+
+<script src="js/ewaste.js"></script>
+</body>
+</html>
