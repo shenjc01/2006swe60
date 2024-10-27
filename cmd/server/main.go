@@ -122,7 +122,7 @@ func main() {
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")
-	log.Println(http.ListenAndServe(":80", nil))
+	log.Println(http.ListenAndServe(":8080", nil))
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 
