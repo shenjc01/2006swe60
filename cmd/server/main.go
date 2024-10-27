@@ -73,6 +73,10 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/textile.html")
 	})
+	http.HandleFunc("/textiles2", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/textile2.html")
+	})
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/Login.html")
@@ -118,7 +122,7 @@ func main() {
 
 	// Start the server
 	log.Println("Server starting on http://localhost:8080")
-	log.Println(http.ListenAndServe(":8080", nil))
+	log.Println(http.ListenAndServe(":80", nil))
 	ticker := time.NewTicker(10 * time.Minute)
 	defer ticker.Stop()
 
