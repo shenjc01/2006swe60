@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+
+body {
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    background-color: #F7FFED;
+    padding: 20px;
+}
+h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 75px;
+    color: #181818;
+    opacity: 0.8;
+  }
+
+  .proceed-button {
+    position: fixed;
+    bottom: 5px;
+    right: 20px;
+    border-radius: 18px;
+    padding: 4px 15px;
+    background-color: #4E7A6A;
+    color: white;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 20px;
+}
+
+.recycling-guide {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    padding: 7px 18px;
+    background-color: #4E7A6A;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 18px;
+}
+
+.quantity-container {
+    margin: 20px 5;
+    padding: 25px;
+}
+
+
+#textileQuantity {
+    height: 45px;
+    width: 300px;
+    border: 2px solid black;
+    border-radius: 18px;
+    font-size: 22px;
+    transition: border-color 0.3s;
+}
