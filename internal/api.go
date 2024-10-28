@@ -372,11 +372,13 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	type Bookmark struct {
-		Name    string `json:"name"`
-		Address string `json:"address"`
+		Name      string `json:"name"`
+		Address   string `json:"address"`
+		Latitude  string `json:"latitude"`
+		Longitude string `json:"longitude"`
 	}
 	rows, err := DB.Query(`
-        SELECT l.Name AS Name, l.Address AS Address
+        SELECT l.Name AS Name, l.Address AS Address, l.Latitude AS Latitude, l.Longitude AS Longitude
         FROM Bookmarks b
         JOIN Locations l ON b.Latitude = l.Latitude AND b.Longitude = l.Longitude
         WHERE b.Username = ?`, username)
@@ -395,7 +397,7 @@ func GetBookmarks(w http.ResponseWriter, r *http.Request) {
 	var bookmarks []Bookmark
 	for rows.Next() {
 		var bookmark Bookmark
-		if err := rows.Scan(&bookmark.Name, &bookmark.Address); err != nil {
+		if err := rows.Scan(&bookmark.Name, &bookmark.Address, &bookmark.Latitude, &bookmark.Longitude); err != nil {
 			return
 		}
 		bookmarks = append(bookmarks, bookmark)
