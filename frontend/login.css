@@ -79,7 +79,8 @@ h1 {
 input {
     padding: 20px;
     border: 1px solid #ccc;
-    color: white;  
+    color: black; 
+    font-size: 18px; 
     border-radius: 5px;
     width: 350px;
     margin-left: 20px;
