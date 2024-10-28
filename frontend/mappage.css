@@ -18,6 +18,18 @@ h1 {
     align-items: center;          
 }
 
+.recycling-guide {
+    position: absolute;
+    top: 25px;
+    right: 20px;
+    padding: 7px 18px;
+    background-color: #4E7A6A;
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: 'Poppins', sans-serif;
+    border-radius: 18px;
+}
 
 /* Sidebar styling */
 #sidebar {
@@ -50,7 +62,8 @@ input {
     flex: 1;                                   
     border: none;     
     background-color: transparent; 
-    color: white;           
+    color: black; 
+    font-size: 18px;          
     border-radius: 0px;    
     padding: 8px;                   
    
@@ -60,20 +73,22 @@ input {
  button {
     flex-basis: 10%;              
     background-color: transparent; 
+    font-size: 14px;
     border: none;                
-    color: white;  
+    color: black;  
     font-weight: bold;             
     cursor: pointer;                            
 }
 
 
 button:hover {
-    opacity: 0.7;               
+    opacity: 0.4;               
 }
 
 #userInput::placeholder {
     font-weight: bold; 
-    color: #F7FFED;  
+    font-size: 14px;
+    color: #181818;  
 }   
 
 /* Map container styling */
