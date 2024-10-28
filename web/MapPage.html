@@ -34,15 +34,6 @@
 </div>
 
 </body>
-
-
-
-
-
-
-
-
-
 <!-- JavaScript code to handle the input -->
 <script>
     const setDebugSessionStorage = () => sessionStorage.setItem("category","RecycleBin");
@@ -70,18 +61,18 @@
         return true;
     }
     const addressResolverUri = str =>
-        https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N;
+        `https://www.onemap.gov.sg/api/common/elastic/search?searchVal=${str}&returnGeom=Y&getAddrDetails=N`;
     function displayPinsUri(width, height, scale, centre, pointlist, colourlist){
         let uri =
-            https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default +
-            &zoom=${scale}&height=${height}&width=${width} +
-            &lat=${centre.get('lat')}&lng=${centre.get('long')}&points=;
+            `https://www.onemap.gov.sg/api/staticmap/getStaticImage?layerchosen=default` +
+            `&zoom=${scale}&height=${height}&width=${width}` +
+            `&lat=${centre.get('lat')}&lng=${centre.get('long')}&points=`;
 
         let i = 0; while (pointlist.length>0)
         {
             uri +=
-                %5B${pointlist[i].get("lat")}%2C${pointlist[i].get("long")}%2C +
-                %22${colourlist[i][0]}%2C${colourlist[i][1]}%2C${colourlist[i][2]}%22%5D;
+                `%5B${pointlist[i].get("lat")}%2C${pointlist[i].get("long")}%2C` +
+                `%22${colourlist[i][0]}%2C${colourlist[i][1]}%2C${colourlist[i][2]}%22%5D`;
 
             if (++i<pointlist.length) uri += "%7C"; // this is the delimiter, |
             else break;
@@ -141,7 +132,7 @@
         sort(locationDirectDistanceComparator).
         slice(0,displayedElementNo).
         map(location =>
-            ${location["Name"]}\nAddress: ${location["Address"]}\nOpening Hours: ${location["Opening Hours"]}
+            `${location["Name"]}\nAddress: ${location["Address"]}\nOpening Hours: ${location["Opening Hours"]}`
         );
         const locationcoords = locationjson.
         slice(0,displayedElementNo).
@@ -177,11 +168,11 @@
             // Await multiple fetch requests simultaneously
             const [response1, response2] = await Promise.all([
                 fetch(addressResolverUri(input)),
-                fetch(window.location.href+api/location?${params})
+                fetch(window.location.href+`api/location?${params}`)
             ]);
             // Check if both responses are okay
-            if (!response1.ok) throw new Error(Error fetching from address resolver: ${await response1.text()});
-            if (!response2.ok) throw new Error(Error fetching from location database: ${await response2.text()});
+            if (!response1.ok) throw new Error(`Error fetching from address resolver: ${await response1.text()}`);
+            if (!response2.ok) throw new Error(`Error fetching from location database: ${await response2.text()}`);
 
             // Await the parsing of both JSON responses
             let startjson;
@@ -208,7 +199,7 @@
             // Display the results
         } catch (error) {
             // Handle any errors
-            document.getElementById("debug").textContent = Error: ${error.message};
+            document.getElementById("debug").textContent = `Error: ${error.message}`;
         }
     }
     function redirectToFinal(){
@@ -217,6 +208,4 @@
         window.location.href = "./final";
     }
 </script>
-
-</body>
 </html>
