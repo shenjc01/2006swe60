@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const commentsContainer = document.getElementById('comments');
 
-    fetch('https://dummyjson.com/comments')
+    fetch('/getComments')
         .then(res => res.json())
         .then(data => {
             data.comments.forEach(comment => {

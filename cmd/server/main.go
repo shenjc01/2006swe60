@@ -103,6 +103,10 @@ func main() {
 		w.Header().Set("Content-Type", "text/html")
 		http.ServeFile(w, r, "./web/profile.html")
 	})
+	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		http.ServeFile(w, r, "./web/pastcomments.html")
+	})
 
 	// Set up API endpoint for data
 	http.HandleFunc("/mapapi/location", internal.GetLocation) // GET requests for location

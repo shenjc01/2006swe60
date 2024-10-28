@@ -14,30 +14,31 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const commentsContainer = document.getElementById('comments');
-
-            fetch('https://dummyjson.com/comments') // replace with the actual database -> dummy api for now
+            const usernametext = await (await fetch("/getUser")).text()
+            fetch('/getComments') // replace with the actual database -> dummy api for now
                 .then(res => res.json())
                 .then(data => {
-                    commentsContainer.innerHTML = ''; 
-                    data.comments.forEach(comment => {
+                    commentsContainer.innerHTML = '';
+                    data.forEach(comment => {
                         const commentdiv = document.createElement('div');
-                        commentdiv.className = 'eachcomment';  
+                        commentdiv.className = 'eachcomment';
 
                         const username = document.createElement('div');
                         username.className = 'username';
-                        username.textContent = comment.user.username;
+                        username.textContent = usernametext
+                        ;
 
                         const text = document.createElement('div');
                         text.className = 'text';
-                        text.textContent = comment.body;
+                        text.textContent = comment["comment"];
 
-                        commentdiv.append(username,text);
+                        commentdiv.append(username, text);
                         commentsContainer.appendChild(commentdiv);
                     });
                 })
-                
+
         });
     </script>
 </body>
