@@ -6,9 +6,10 @@ body {
     background-color: #F7FFED;
     font-family: 'Poppins', sans-serif;
     margin: 0;
-    padding: 0;
+    padding-top: 80px;
     
 }
+
 
 img {
     width: 100%;

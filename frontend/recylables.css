@@ -5,8 +5,16 @@ body {
     background-color: #F7FFED;
     margin: 0;
     padding: 0;
+    padding-top: 150px;
     
 
+}
+.navbarcontainer {
+    position: fixed; 
+    top: 0; 
+    width: 100%; 
+    z-index: 999; 
+    box-shadow: var(--box-shadow);
 }
 
 h1 {
