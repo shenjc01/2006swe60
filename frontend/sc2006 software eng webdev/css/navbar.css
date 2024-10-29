@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+/* start nav */
+#main-nav {
+    position: fixed;
+    top: 0;
+    width:100%;
+    background-color: #4E7a6a;
+    box-shadow: 0px 10px 30px rgba(57, 56, 61, 0.205);
+    font-family: 'Roboto', sans-serif;
+    font-size: 1rem;
+    color: #F7FFED;
+    z-index: 999;
+}
+
+#main-nav.sticky {
+    position: fixed;
+    top: 0;
+}
+
+@media
+(prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+:target {
+    position: relative;
+    border-top: 103.975px solid transparent;
+    margin:-103.975px 0 0;
+    background-clip: padding-box;
+}
+
+
+.header_area .main-menu .navbar .navbar-brand {
+    padding: 0 2rem 0 0;
+}
+
+.header_area .main-menu .navbar {
+    padding: 1rem 1rem;
+}
+
+.header_area .main-menu .nav-item .nav-link {
+    font-family: 'Roboto', sans-serif;
+    text-transform: uppercase;
+    padding: 1rem 0 0 2rem;
+}
+
+.nav-login {
+    position: relative;
+    display: inline-block;
+  }
+  
+.nav-login .navbar-img-hover {
+    display: none;
+  }
+  
+.nav-login:hover .navbar-img-nohover {
+    display: none;
+  }
+  
+.nav-login:hover .navbar-img-hover {
+    display: inline;
+  }
+
+.header_area .main-menu .navbar-nav .nav-link {
+    color: #F7FFED;
+    text-decoration: none;
+}
+
+.header_area .main-menu .navbar-nav .nav-link:hover{
+    color: #b4c59f;
+    font-weight: bold;
+}
+
+.header_area .main-menu .navbar-nav .nav-link:active {
+    color: #b4c59f;
+    font-weight: bold;
+}
+
+.nav-login-icon{
+    margin: 0 1.5rem 0 0;
+}
+
+.dropdown-menu{
+    background-color: #F7FFED;
+    margin: 1.4rem 0 0 0;    
+}
+
+.dropdown-item{
+    font-family: 'Roboto', sans-serif;
+    color: #4E7a6a;
+}
+
+.dropdown-item:hover{
+    background-color: #b4c59f;
+    color: #F7FFED;
+    font-family: 'Roboto', sans-serif;
+}
+
+/* end nav */
