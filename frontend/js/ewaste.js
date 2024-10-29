@@ -24,6 +24,12 @@ function storecategories() {
 }
 
 function nextpage() {
+    const checkboxes = document.querySelectorAll('.checkbox');
+    if(!Array.from(checkboxes).some(checkbox => checkbox.checked))
+    {
+        alert("Select at least one category");
+        return;
+    }
     storecategories();
     const selectedCategories = JSON.parse(sessionStorage.getItem("SelectedCategories"));
     console.log("Selected Categories:", selectedCategories); 

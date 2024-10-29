@@ -27,6 +27,12 @@ function storerecyclingtype() {
 
 function nextpage()
 {
+    const checkboxes = document.querySelectorAll('.checkbox');
+    if(!Array.from(checkboxes).some(checkbox => checkbox.checked))
+    {
+        alert("Select at least one category");
+        return;
+    }
     storerecyclingtype();
     
      const category = sessionStorage.getItem("category");
